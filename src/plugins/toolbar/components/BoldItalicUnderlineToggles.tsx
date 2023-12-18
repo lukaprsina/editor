@@ -26,7 +26,7 @@ export const BoldItalicUnderlineToggles: React.FC = () => {
         { title: italicTitle, contents: iconComponentFor('format_italic'), active: italicIsOn, onChange: applyFormat.bind(null, 'italic') },
         {
           title: underlineTitle,
-          contents: <div style={{ transform: 'translateY(2px)' }}>{iconComponentFor('format_underlined')}</div>,
+          contents: <div>{iconComponentFor('format_underlined')}</div>,
           active: underlineIsOn,
           onChange: applyFormat.bind(null, 'underline')
         }

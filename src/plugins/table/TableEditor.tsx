@@ -184,7 +184,7 @@ export const TableEditor: React.FC<TableEditorProps> = ({ mdastNode, parentEdito
                   })
                 }}
               >
-                {iconComponentFor('delete_small')}
+                {iconComponentFor('delete_big')}
               </button>
             </th>
             {Array.from({ length: mdastNode.children[0].children.length }, (_, colIndex) => {
@@ -492,7 +492,7 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
               {iconComponentFor('insert_col_right')}
             </RadixToolbar.Button>
             <RadixToolbar.Button onClick={deleteColumnAt.bind(null, colIndex)} title="Delete this column">
-              {iconComponentFor('delete_small')}
+              {iconComponentFor('delete_big')}
             </RadixToolbar.Button>
           </RadixToolbar.Root>
           <RadixPopover.Arrow className={styles.popoverArrow} />
@@ -558,7 +558,7 @@ const RowEditor: React.FC<RowEditorProps> = ({
               {iconComponentFor('insert_row_below')}
             </RadixToolbar.Button>
             <RadixToolbar.Button onClick={deleteRowAt.bind(null, rowIndex)} title="Delete this row">
-              {iconComponentFor('delete_small')}
+              {iconComponentFor('delete_big')}
             </RadixToolbar.Button>
           </RadixToolbar.Root>
           <RadixPopover.Arrow className={styles.popoverArrow} />

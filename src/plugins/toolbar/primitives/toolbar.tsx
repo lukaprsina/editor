@@ -303,7 +303,7 @@ export const ConditionalContents: React.FC<ConditionalContentsProps> = ({ option
     return option ? (isConditionalContentsOption(option) ? option.contents() : option.fallback()) : null
   }, [options, editorInFocus])
 
-  return <div style={{ display: 'flex' }}>{contents}</div>
+  return <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>{contents}</div>
 }
 
 /**

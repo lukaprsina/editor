@@ -1,8 +1,10 @@
-<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="mask0_318_257" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="25" height="24">
-<rect x="0.929688" width="24" height="24" fill="#D9D9D9"/>
-</mask>
-<g mask="url(#mask0_318_257)">
-<path d="M12.4297 13H14.4297V11H16.4297V9H14.4297V7H12.4297V9H10.4297V11H12.4297V13ZM10.4297 17H16.4297V15H10.4297V17ZM5.92969 21V3H14.9297L20.9297 9V21H5.92969ZM7.92969 19H18.9297V10L13.9297 5H7.92969V19Z" fill="black"/>
-</g>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M8.75 16H15.3C15.7 16 16 15.7 16 15.3V0.599998C16 0.300003 15.7 0 15.3 0H8.75H7.5H0.600006C0.299988 0 0 0.300003 0 0.599998V15.3C0 15.7 0.299988 16 0.600006 16H7.5H8.75ZM8.75 14.7H14.7V1.2H8.75V14.7ZM7.5 14.7V1.2H1.20001V14.7H7.5Z" fill="black"/>
+<rect x="2.25" y="11" width="3" height="1.25" rx="0.625" fill="black"/>
+<rect x="2.25" y="8.5" width="4" height="1.25" rx="0.625" fill="black"/>
+<rect x="2.25" y="6" width="3" height="1.25" rx="0.625" fill="black"/>
+<rect x="2.25" y="3.5" width="3" height="1.25" rx="0.625" fill="black"/>
+<rect x="9.75" y="8.5" width="3" height="1.25" rx="0.625" fill="black"/>
+<rect x="9.75" y="6" width="4" height="1.25" rx="0.625" fill="black"/>
+<rect x="9.75" y="3.5" width="4" height="1.25" rx="0.625" fill="black"/>
 </svg>

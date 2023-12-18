@@ -599,10 +599,9 @@
   text-decoration: none;
 
   & svg {
-    width: var(--spacing-5);
-    height: var(--spacing-5);
     margin-left: var(--spacing-2);
   }
+
   border: 1px solid transparent;
 
   & span {
