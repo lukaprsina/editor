@@ -1,6 +1,24 @@
 import React from 'react'
-import { RealmPluginInitializer, useHasPlugin } from './gurx'
-import { corePlugin, corePluginHooks } from './plugins/core'
+import {
+  composerChildren$,
+  contentEditableClassName$,
+  corePlugin,
+  editorRootElementRef$,
+  editorWrappers$,
+  initialRootEditorState$,
+  placeholder$,
+  readOnly$,
+  topAreaChildren$,
+  usedLexicalNodes$,
+  markdownSourceEditorValue$,
+  viewMode$,
+  markdown$,
+  setMarkdown$,
+  rootEditor$
+} from './plugins/core'
+import { RealmPlugin, RealmWithPlugins } from './RealmWithPlugins'
+import { useCellValues, usePublisher, useRealm } from '@mdxeditor/gurx'
+
 import { lexicalTheme } from './styles/lexicalTheme'
 import { LexicalComposer } from '@lexical/react/LexicalComposer.js'
 import styles from './styles/ui.module.css'
@@ -13,11 +31,7 @@ import { noop } from './utils/fp'
 import { IconKey } from './plugins/core/Icon'
 
 const LexicalProvider: React.FC<{ children: JSX.Element | string | (JSX.Element | string)[] }> = ({ children }) => {
-  const [initialRootEditorState, nodes, readOnly] = corePluginHooks.useEmitterValues(
-    'initialRootEditorState',
-    'usedLexicalNodes',
-    'readOnly'
-  )
+  const [initialRootEditorState, nodes, readOnly] = useCellValues(initialRootEditorState$, usedLexicalNodes$, readOnly$)
   return (
     <LexicalComposer
       initialConfig={{
@@ -37,12 +51,12 @@ const LexicalProvider: React.FC<{ children: JSX.Element | string | (JSX.Element 
 }
 
 const RichTextEditor: React.FC = () => {
-  const [contentEditableClassName, composerChildren, topAreaChildren, editorWrappers, placeholder] = corePluginHooks.useEmitterValues(
-    'contentEditableClassName',
-    'composerChildren',
-    'topAreaChildren',
-    'editorWrappers',
-    'placeholder'
+  const [contentEditableClassName, composerChildren, topAreaChildren, editorWrappers, placeholder] = useCellValues(
+    contentEditableClassName$,
+    composerChildren$,
+    topAreaChildren$,
+    editorWrappers$,
+    placeholder$
   )
   return (
     <>
@@ -100,7 +114,7 @@ export interface MDXEditorProps {
   /**
    * The plugins to use in the editor.
    */
-  plugins?: React.ComponentProps<typeof RealmPluginInitializer>['plugins']
+  plugins?: RealmPlugin[]
   /**
    * The class name to apply to the root component element. Use this if you want to change the editor dimensions, maximum height, etc.
    * For a content-specific styling, Use `contentEditableClassName` property.
@@ -193,7 +207,7 @@ const RenderRecurisveWrappers: React.FC<{ wrappers: React.ComponentType<{ childr
 
 const EditorRootElement: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => {
   const editorRootElementRef = React.useRef<HTMLDivElement | null>(null)
-  const setEditorRootElementRef = corePluginHooks.usePublisher('editorRootElementRef')
+  const setEditorRootElementRef = usePublisher(editorRootElementRef$)
 
   React.useEffect(() => {
     const popupContainer = document.createElement('div')
@@ -215,32 +229,28 @@ const EditorRootElement: React.FC<{ children: React.ReactNode; className?: strin
 }
 
 const Methods: React.FC<{ mdxRef: React.ForwardedRef<MDXEditorMethods> }> = ({ mdxRef }) => {
-  const realm = corePluginHooks.useRealmContext()
-  const hasDiffSourcePlugin = useHasPlugin('diff-source')
+  const realm = useRealm()
 
   React.useImperativeHandle(
     mdxRef,
     () => {
       return {
         getMarkdown: () => {
-          if (hasDiffSourcePlugin) {
-            //@ts-expect-error we're accessing values from the diff-source plugin, but TS does not know about this. Typecast can be done, but we should import from the plugin.
-            if (realm.getKeyValue('viewMode') === 'source') {
-              // @ts-expect-error see above
-              return realm.getKeyValue('markdownSourceEditorValue') as string
-            }
+          if (realm.getValue(viewMode$) === 'source') {
+            return realm.getValue(markdownSourceEditorValue$)
           }
-          return realm.getKeyValue('markdown')
+
+          return realm.getValue(markdown$)
         },
         setMarkdown: (markdown) => {
-          realm.pubKey('setMarkdown', markdown)
+          realm.pub(setMarkdown$, markdown)
         },
         focus: (callbackFn?: (() => void) | undefined, opts?: { defaultSelection?: 'rootStart' | 'rootEnd'; preventScroll?: boolean }) => {
-          realm.getKeyValue('rootEditor')?.focus(callbackFn, opts)
+          realm.getValue(rootEditor$)?.focus(callbackFn, opts)
         }
       }
     },
-    [realm, hasDiffSourcePlugin]
+    [realm]
   )
   return null
 }
@@ -250,7 +260,7 @@ const Methods: React.FC<{ mdxRef: React.ForwardedRef<MDXEditorMethods> }> = ({ m
  */
 export const MDXEditor = React.forwardRef<MDXEditorMethods, MDXEditorProps>((props, ref) => {
   return (
-    <RealmPluginInitializer
+    <RealmWithPlugins
       plugins={[
         corePlugin({
           contentEditableClassName: props.contentEditableClassName ?? '',
@@ -274,6 +284,6 @@ export const MDXEditor = React.forwardRef<MDXEditorMethods, MDXEditorProps>((pro
         </LexicalProvider>
       </EditorRootElement>
       <Methods mdxRef={ref} />
-    </RealmPluginInitializer>
+    </RealmWithPlugins>
   )
 })

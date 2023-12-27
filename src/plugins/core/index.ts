@@ -1,8 +1,10 @@
+import { realmPlugin } from '@/RealmWithPlugins'
 import { InitialEditorStateType } from '@lexical/react/LexicalComposer.js'
 import { createEmptyHistoryState } from '@lexical/react/LexicalHistoryPlugin.js'
 import { $isHeadingNode, HeadingTagType } from '@lexical/rich-text'
 import { $setBlocksType } from '@lexical/selection'
 import { $findMatchingParent, $insertNodeToNearestRoot, $wrapNodeInElement } from '@lexical/utils'
+import { Cell, NodeRef, Realm, Signal, filter, scan, withLatestFrom } from '@mdxeditor/gurx'
 import {
   $createParagraphNode,
   $getRoot,
@@ -30,9 +32,10 @@ import {
   createCommand
 } from 'lexical'
 import * as Mdast from 'mdast'
+import { mdxJsxFromMarkdown, mdxJsxToMarkdown } from 'mdast-util-mdx-jsx'
+import { mdxJsx } from 'micromark-extension-mdx-jsx'
 import React from 'react'
 import { LexicalConvertOptions, exportMarkdownFromLexical } from '../../exportMarkdownFromLexical'
-import { RealmNode, realmPlugin, system } from '../../gurx'
 import {
   MarkdownParseError,
   MarkdownParseOptions,
@@ -40,26 +43,24 @@ import {
   UnrecognizedMarkdownConstructError,
   importMarkdownToLexical
 } from '../../importMarkdownToLexical'
+import { controlOrMeta } from '../../utils/detectMac'
+import { noop } from '../../utils/fp'
 import type { JsxComponentDescriptor } from '../jsx'
+import { GenericHTMLNode } from './GenericHTMLNode'
+import { type IconKey } from './Icon'
+import { LexicalGenericHTMLVisitor } from './LexicalGenericHTMLNodeVisitor'
 import { LexicalLinebreakVisitor } from './LexicalLinebreakVisitor'
 import { LexicalParagraphVisitor } from './LexicalParagraphVisitor'
 import { LexicalRootVisitor } from './LexicalRootVisitor'
 import { LexicalTextVisitor } from './LexicalTextVisitor'
+import { MdastBreakVisitor } from './MdastBreakVisitor'
 import { MdastFormattingVisitor } from './MdastFormattingVisitor'
+import { MdastHTMLVisitor } from './MdastHTMLVisitor'
 import { MdastInlineCodeVisitor } from './MdastInlineCodeVisitor'
 import { MdastParagraphVisitor } from './MdastParagraphVisitor'
 import { MdastRootVisitor } from './MdastRootVisitor'
 import { MdastTextVisitor } from './MdastTextVisitor'
 import { SharedHistoryPlugin } from './SharedHistoryPlugin'
-import { noop } from '../../utils/fp'
-import { controlOrMeta } from '../../utils/detectMac'
-import { MdastBreakVisitor } from './MdastBreakVisitor'
-import { type IconKey } from './Icon'
-import { mdxJsxFromMarkdown, mdxJsxToMarkdown } from 'mdast-util-mdx-jsx'
-import { mdxJsx } from 'micromark-extension-mdx-jsx'
-import { MdastHTMLVisitor } from './MdastHTMLVisitor'
-import { GenericHTMLNode } from './GenericHTMLNode'
-import { LexicalGenericHTMLVisitor } from './LexicalGenericHTMLNodeVisitor'
 
 export * from './GenericHTMLNode'
 
@@ -81,344 +82,39 @@ export interface EditorInFocus {
 /** @internal */
 export const NESTED_EDITOR_UPDATED_COMMAND = createCommand<void>('NESTED_EDITOR_UPDATED_COMMAND')
 
-/**
- * Add the the core system when creating systemf for your own plugins.
- * This gives you access to the component core state and logic, like the visitors, the lexical nodes, and the publishers used to insert nodes in the editor.
- */
-export const coreSystem = system((r) => {
-  function createAppendNodeFor<T>(node: RealmNode<T[]>) {
-    const appendNode = r.node<T>()
+export const rootEditor$ = Cell<LexicalEditor | null>(null)
+export const activeEditor$ = Cell<LexicalEditor | null>(null)
+export const contentEditableClassName$ = Cell('')
 
-    r.link(
-      r.pipe(
-        appendNode,
-        r.o.withLatestFrom(node),
-        r.o.map(([newValue, values]) => {
-          if (values.includes(newValue)) {
-            return values
-          }
-          return [...values, newValue]
-        })
-      ),
-      node
-    )
-    return appendNode
-  }
+export const readOnly$ = Cell(false, (r) => {
+  r.sub(r.pipe(readOnly$, withLatestFrom(rootEditor$)), ([readOnly, rootEditor]) => {
+    rootEditor?.setEditable(!readOnly)
+  })
+})
 
-  const rootEditor = r.node<LexicalEditor | null>(null)
-  const activeEditor = r.node<LexicalEditor | null>(null, true)
-  const contentEditableClassName = r.node<string>('')
-  const readOnly = r.node<boolean>(false)
-  const placeholder = r.node<React.ReactNode>('')
-  const autoFocus = r.node<boolean | { defaultSelection?: 'rootStart' | 'rootEnd'; preventScroll?: boolean }>(false)
-  const inFocus = r.node(false, true)
-  const currentFormat = r.node(0, true)
-  const markdownProcessingError = r.node<{ error: string; source: string } | null>(null)
-  const markdownErrorSignal = r.node<{ error: string; source: string }>()
-
+export const placeholder$ = Cell<React.ReactNode>('')
+export const autoFocus$ = Cell<boolean | { defaultSelection?: 'rootStart' | 'rootEnd'; preventScroll?: boolean }>(false)
+export const inFocus$ = Cell(false)
+export const currentFormat$ = Cell(0)
+export const markdownProcessingError$ = Cell<{ error: string; source: string } | null>(null)
+export const markdownErrorSignal$ = Signal<{ error: string; source: string }>((r) => {
   r.link(
     r.pipe(
-      markdownProcessingError,
-      r.o.filter((e) => e !== null)
+      markdownProcessingError$,
+      filter((e) => e !== null)
     ),
-    markdownErrorSignal
+    markdownErrorSignal$
   )
+})
 
-  const applyFormat = r.node<TextFormatType>()
-  const currentSelection = r.node<RangeSelection | null>(null)
-
-  const activeEditorSubscriptions = r.node<EditorSubscription[]>([])
-  const rootEditorSubscriptions = r.node<EditorSubscription[]>([])
-  const editorInFocus = r.node<EditorInFocus | null>(null)
-
-  const onBlur = r.node<FocusEvent>()
-
-  const iconComponentFor = r.node<(name: IconKey) => React.ReactNode>((name: IconKey) => {
-    throw new Error(`No icon component for ${name}`)
-  })
-
-  const rebind = () =>
-    r.o.scan((teardowns, [subs, activeEditorValue]: [EditorSubscription[], LexicalEditor]) => {
-      teardowns.forEach((teardown) => {
-        if (!teardown) {
-          throw new Error('You have a subscription that does not return a teardown')
-        }
-        teardown()
-      })
-      return activeEditorValue ? subs.map((s) => s(activeEditorValue)) : []
-    }, [] as Teardowns)
-
-  r.pipe(r.combine(activeEditorSubscriptions, activeEditor), rebind())
-  r.pipe(r.combine(rootEditorSubscriptions, rootEditor), rebind())
-
-  const createRootEditorSubscription = createAppendNodeFor(rootEditorSubscriptions)
-  const createActiveEditorSubscription = createAppendNodeFor(activeEditorSubscriptions)
-
-  function handleSelectionChange() {
-    const selection = $getSelection()
-    if ($isRangeSelection(selection)) {
-      r.pubKeys({
-        currentSelection: selection,
-        currentFormat: selection.format
-      })
-    }
-  }
-
-  ////////////////////////
-  // track the active editor - this is necessary for the nested editors
-  ////////////////////////
-  r.pub(createRootEditorSubscription, (theRootEditor) => {
-    return theRootEditor.registerCommand(
-      SELECTION_CHANGE_COMMAND,
-      (_, theActiveEditor) => {
-        r.pubIn({
-          [activeEditor.key]: theActiveEditor,
-          [inFocus.key]: true
-        })
-        // doing stuff root editor restores the focus state
-        if (theActiveEditor._parentEditor === null) {
-          theActiveEditor.getEditorState().read(() => {
-            r.pub(editorInFocus, {
-              rootNode: $getRoot(),
-              editorType: 'lexical'
-            })
-          })
-        }
-        handleSelectionChange()
-
-        return false
-      },
-      COMMAND_PRIORITY_CRITICAL
-    )
-  })
-
-  // Export handler
-  r.pub(createRootEditorSubscription, (theRootEditor) => {
-    return theRootEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, editorState }) => {
-      const err = r.getValue(markdownProcessingError)
-      if (err !== null) {
-        return
-      }
-      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
-        return
-      }
-
-      let theNewMarkdownValue!: string
-
-      editorState.read(() => {
-        theNewMarkdownValue = exportMarkdownFromLexical({
-          root: $getRoot(),
-          visitors: r.getValue(exportVisitors),
-          jsxComponentDescriptors: r.getValue(jsxComponentDescriptors),
-          toMarkdownExtensions: r.getValue(toMarkdownExtensions),
-          toMarkdownOptions: r.getValue(toMarkdownOptions),
-          jsxIsAvailable: r.getValue(jsxIsAvailable)
-        })
-      })
-
-      r.pub(markdown, theNewMarkdownValue.trim())
-    })
-  })
-
-  const initialMarkdown = r.node<string>('')
-  const markdown = r.node<string>('', true)
-  const markdownSignal = r.node<string>()
-  r.link(markdown, markdownSignal)
-  r.link(initialMarkdown, markdown)
-
-  // import configuration
-  const importVisitors = r.node<MdastImportVisitor<Mdast.Content>[]>([])
-  const syntaxExtensions = r.node<MarkdownParseOptions['syntaxExtensions']>([])
-  const mdastExtensions = r.node<MarkdownParseOptions['mdastExtensions']>([])
-
-  const usedLexicalNodes = r.node<Klass<LexicalNode>[]>([])
-
-  // export configuration
-  const exportVisitors = r.node<NonNullable<LexicalConvertOptions['visitors']>>([])
-  const toMarkdownExtensions = r.node<NonNullable<LexicalConvertOptions['toMarkdownExtensions']>>([])
-  const toMarkdownOptions = r.node<NonNullable<LexicalConvertOptions['toMarkdownOptions']>>({}, true)
-
-  // the JSX plugin will fill in these
-  const jsxIsAvailable = r.node<boolean>(false)
-  const jsxComponentDescriptors = r.node<JsxComponentDescriptor[]>([])
-
-  // used for the various popups, dialogs, and tooltips
-  const editorRootElementRef = r.node<React.RefObject<HTMLDivElement> | null>(null)
-
-  const addLexicalNode = createAppendNodeFor(usedLexicalNodes)
-  const addImportVisitor = createAppendNodeFor(importVisitors)
-  const addSyntaxExtension = createAppendNodeFor(syntaxExtensions)
-  const addMdastExtension = createAppendNodeFor(mdastExtensions)
-  const addExportVisitor = createAppendNodeFor(exportVisitors)
-  const addToMarkdownExtension = createAppendNodeFor(toMarkdownExtensions)
-  const setMarkdown = r.node<string>()
-
-  function tryImportingMarkdown(markdownValue: string) {
-    try {
-      ////////////////////////
-      // Import initial value
-      ////////////////////////
-      importMarkdownToLexical({
-        root: $getRoot(),
-        visitors: r.getValue(importVisitors),
-        mdastExtensions: r.getValue(mdastExtensions),
-        markdown: markdownValue,
-        syntaxExtensions: r.getValue(syntaxExtensions)
-      })
-      r.pub(markdownProcessingError, null)
-    } catch (e) {
-      if (e instanceof MarkdownParseError || e instanceof UnrecognizedMarkdownConstructError) {
-        r.pubIn({
-          [markdown.key]: markdownValue,
-          [markdownProcessingError.key]: {
-            error: e.message,
-            source: markdown
-          }
-        })
-      } else {
-        throw e
-      }
-    }
-  }
-
-  r.sub(
-    r.pipe(
-      setMarkdown,
-      r.o.withLatestFrom(markdown, rootEditor, inFocus),
-      r.o.filter(([newMarkdown, oldMarkdown]) => {
-        return newMarkdown.trim() !== oldMarkdown.trim()
-      })
-    ),
-    ([theNewMarkdownValue, , editor, inFocus]) => {
-      editor?.update(() => {
-        $getRoot().clear()
-        tryImportingMarkdown(theNewMarkdownValue)
-
-        if (!inFocus) {
-          $setSelection(null)
-        } else {
-          editor.focus()
-        }
-      })
-    }
-  )
-
-  // gets bound to the root editor state getter
-  const initialRootEditorState = r.node<InitialEditorStateType>((theRootEditor) => {
-    r.pub(rootEditor, theRootEditor)
-    r.pub(activeEditor, theRootEditor)
-
-    tryImportingMarkdown(r.getValue(initialMarkdown))
-
-    const autoFocusValue = r.getValue(autoFocus)
-    if (autoFocusValue) {
-      if (autoFocusValue === true) {
-        // Default 'on' state
-        setTimeout(() => theRootEditor.focus(noop, { defaultSelection: 'rootStart' }))
-        return
-      }
-      setTimeout(() =>
-        theRootEditor.focus(noop, {
-          defaultSelection: autoFocusValue.defaultSelection ?? 'rootStart'
-        })
-      )
-    }
-  })
-
-  r.pub(createActiveEditorSubscription, (editor) => {
-    return editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        handleSelectionChange()
-      })
-    })
-  })
-
-  r.pub(createActiveEditorSubscription, (theEditor) => {
-    return theEditor.registerCommand(
-      BLUR_COMMAND,
-      (payload) => {
-        const theRootEditor = r.getValue(rootEditor)
-        if (theRootEditor) {
-          const movingOutside = !theRootEditor.getRootElement()?.contains(payload.relatedTarget as Node)
-          if (movingOutside) {
-            r.pubIn({
-              [inFocus.key]: false,
-              [onBlur.key]: payload
-            })
-          }
-        }
-        return false
-      },
-      COMMAND_PRIORITY_CRITICAL
-    )
-  })
-
-  r.pub(createRootEditorSubscription, (theEditor) => {
-    return theEditor.registerCommand(
-      FOCUS_COMMAND,
-      () => {
-        r.pub(inFocus, true)
-        return false
-      },
-      COMMAND_PRIORITY_CRITICAL
-    )
-  })
-
-  // Fixes select all when frontmatter is present
-  r.pub(createRootEditorSubscription, (theRootEditor) => {
-    return theRootEditor.registerCommand<KeyboardEvent>(
-      KEY_DOWN_COMMAND,
-      (event) => {
-        const { keyCode, ctrlKey, metaKey } = event
-        if (keyCode === 65 && controlOrMeta(metaKey, ctrlKey)) {
-          let shouldOverride = false
-
-          theRootEditor.getEditorState().read(() => {
-            shouldOverride = $isDecoratorNode($getRoot().getFirstChild()) || $isDecoratorNode($getRoot().getLastChild())
-          })
-
-          if (shouldOverride) {
-            event.preventDefault()
-            event.stopImmediatePropagation()
-            theRootEditor.update(() => {
-              const rootElement = theRootEditor.getRootElement() as HTMLDivElement
-              window.getSelection()?.selectAllChildren(rootElement)
-              rootElement.focus({
-                preventScroll: true
-              })
-            })
-            return true
-          }
-        }
-
-        return false
-      },
-      COMMAND_PRIORITY_CRITICAL
-    )
-  })
-
-  const composerChildren = r.node<React.ComponentType[]>([])
-  const addComposerChild = createAppendNodeFor(composerChildren)
-
-  const topAreaChildren = r.node<React.ComponentType[]>([])
-  const addTopAreaChild = createAppendNodeFor(topAreaChildren)
-
-  const editorWrappers = r.node<React.ComponentType<{ children: React.ReactNode }>[]>([])
-  const addEditorWrapper = createAppendNodeFor(editorWrappers)
-
-  const nestedEditorChildren = r.node<React.ComponentType[]>([])
-  const addNestedEditorChild = createAppendNodeFor(nestedEditorChildren)
-
-  const historyState = r.node(createEmptyHistoryState())
-
-  r.sub(r.pipe(applyFormat, r.o.withLatestFrom(activeEditor)), ([format, theEditor]) => {
+export const applyFormat$ = Signal<TextFormatType>((r) => {
+  r.sub(r.pipe(applyFormat$, withLatestFrom(activeEditor$)), ([format, theEditor]) => {
     theEditor?.dispatchCommand(FORMAT_TEXT_COMMAND, format)
   })
+})
 
-  const currentBlockType = r.node<BlockType | ''>('')
-  const applyBlockType = r.node<BlockType>()
-
-  r.sub(r.pipe(currentSelection, r.o.withLatestFrom(activeEditor)), ([selection, theEditor]) => {
+export const currentSelection$ = Cell<RangeSelection | null>(null, (r) => {
+  r.sub(r.pipe(currentSelection$, withLatestFrom(activeEditor$)), ([selection, theEditor]) => {
     if (!selection || !theEditor) {
       return
     }
@@ -441,13 +137,326 @@ export const coreSystem = system((r) => {
 
     if (elementDOM !== null) {
       const blockType = $isHeadingNode(element) ? element.getTag() : (element.getType() as BlockType)
-      r.pub(currentBlockType, blockType)
+      r.pub(currentBlockType$, blockType)
     }
   })
+})
 
-  const convertSelectionToNode = r.node<() => ElementNode>()
+export const initialMarkdown$ = Cell('')
 
-  r.sub(r.pipe(convertSelectionToNode, r.o.withLatestFrom(activeEditor)), ([factory, editor]) => {
+export const markdown$ = Cell('')
+const markdownSignal$ = Signal<string>((r) => {
+  r.link(markdown$, markdownSignal$)
+  r.link(initialMarkdown$, markdown$)
+})
+
+// import configuration
+export const importVisitors$ = Cell<MdastImportVisitor<Mdast.Content>[]>([])
+export const syntaxExtensions$ = Cell<MarkdownParseOptions['syntaxExtensions']>([])
+export const mdastExtensions$ = Cell<NonNullable<MarkdownParseOptions['mdastExtensions']>>([])
+
+export const usedLexicalNodes$ = Cell<Klass<LexicalNode>[]>([])
+
+// export configuration
+export const exportVisitors$ = Cell<NonNullable<LexicalConvertOptions['visitors']>>([])
+export const toMarkdownExtensions$ = Cell<NonNullable<LexicalConvertOptions['toMarkdownExtensions']>>([])
+export const toMarkdownOptions$ = Cell<NonNullable<LexicalConvertOptions['toMarkdownOptions']>>({})
+
+// the JSX plugin will fill in these
+export const jsxIsAvailable$ = Cell(false)
+export const jsxComponentDescriptors$ = Cell<JsxComponentDescriptor[]>([])
+
+// used for the various popups, dialogs, and tooltips
+export const editorRootElementRef$ = Cell<React.RefObject<HTMLDivElement> | null>(null)
+
+export const addLexicalNode$ = Appender(usedLexicalNodes$)
+export const addImportVisitor$ = Appender(importVisitors$)
+export const addSyntaxExtension$ = Appender(syntaxExtensions$)
+export const addMdastExtension$ = Appender(mdastExtensions$)
+export const addExportVisitor$ = Appender(exportVisitors$)
+export const addToMarkdownExtension$ = Appender(toMarkdownExtensions$)
+
+export const setMarkdown$ = Signal<string>((r) => {
+  r.sub(
+    r.pipe(
+      setMarkdown$,
+      withLatestFrom(markdown$, rootEditor$, inFocus$),
+      filter(([newMarkdown, oldMarkdown]) => {
+        return newMarkdown.trim() !== oldMarkdown.trim()
+      })
+    ),
+    ([theNewMarkdownValue, , editor, inFocus]) => {
+      editor?.update(() => {
+        $getRoot().clear()
+        tryImportingMarkdown(r, theNewMarkdownValue)
+
+        if (!inFocus) {
+          $setSelection(null)
+        } else {
+          editor.focus()
+        }
+      })
+    }
+  )
+})
+
+function rebind() {
+  return scan((teardowns, [subs, activeEditorValue]: [EditorSubscription[], LexicalEditor | null]) => {
+    teardowns.forEach((teardown) => {
+      if (!teardown) {
+        throw new Error('You have a subscription that does not return a teardown')
+      }
+      teardown()
+    })
+    return activeEditorValue ? subs.map((s) => s(activeEditorValue)) : []
+  }, [] as Teardowns)
+}
+
+export const activeEditorSubscriptions$ = Cell<EditorSubscription[]>([], (r) => {
+  r.pipe(r.combine(activeEditorSubscriptions$, activeEditor$), rebind())
+})
+
+export const rootEditorSubscriptions$ = Cell<EditorSubscription[]>([], (r) => {
+  r.pipe(r.combine(rootEditorSubscriptions$, rootEditor$), rebind())
+})
+
+export const editorInFocus$ = Cell<EditorInFocus | null>(null)
+export const onBlur$ = Signal<FocusEvent>()
+
+export const iconComponentFor$ = Cell<(name: IconKey) => React.ReactNode>((name: IconKey) => {
+  throw new Error(`No icon component for ${name}`)
+})
+
+function Appender<T>(cell$: NodeRef<T[]>, init?: (r: Realm, sig$: NodeRef<T | T[]>) => void) {
+  return Signal<T | T[]>((r, sig$) => {
+    r.changeWith(cell$, sig$, (values, newValue) => {
+      if (!Array.isArray(newValue)) {
+        newValue = [newValue]
+      }
+      let result = values
+
+      for (const v of newValue) {
+        if (!values.includes(v)) {
+          result = [...result, v]
+        }
+      }
+      return result
+    })
+    init?.(r, sig$)
+  })
+}
+
+function handleSelectionChange(r: Realm) {
+  const selection = $getSelection()
+  if ($isRangeSelection(selection)) {
+    r.pubIn({
+      [currentSelection$]: selection,
+      [currentFormat$]: selection.format
+    })
+  }
+}
+
+export const createRootEditorSubscription$ = Appender(rootEditorSubscriptions$, (r, sig$) => {
+  // track the active editor - this is necessary for the nested editors
+  r.pub(sig$, [
+    (rootEditor) => {
+      return rootEditor.registerCommand(
+        SELECTION_CHANGE_COMMAND,
+        (_, theActiveEditor) => {
+          r.pubIn({
+            [activeEditor$]: theActiveEditor,
+            [inFocus$]: true
+          })
+          // doing stuff root editor restores the focus state
+          if (theActiveEditor._parentEditor === null) {
+            theActiveEditor.getEditorState().read(() => {
+              r.pub(editorInFocus$, {
+                rootNode: $getRoot(),
+                editorType: 'lexical'
+              })
+            })
+          }
+          handleSelectionChange(r)
+
+          return false
+        },
+        COMMAND_PRIORITY_CRITICAL
+      )
+    },
+    // Export handler
+    (rootEditor) => {
+      return rootEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, editorState }) => {
+        const err = r.getValue(markdownProcessingError$)
+        if (err !== null) {
+          return
+        }
+        if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
+          return
+        }
+
+        let theNewMarkdownValue!: string
+
+        editorState.read(() => {
+          theNewMarkdownValue = exportMarkdownFromLexical({
+            root: $getRoot(),
+            visitors: r.getValue(exportVisitors$),
+            jsxComponentDescriptors: r.getValue(jsxComponentDescriptors$),
+            toMarkdownExtensions: r.getValue(toMarkdownExtensions$),
+            toMarkdownOptions: r.getValue(toMarkdownOptions$),
+            jsxIsAvailable: r.getValue(jsxIsAvailable$)
+          })
+        })
+
+        r.pub(markdown$, theNewMarkdownValue.trim())
+      })
+    },
+    (rootEditor) => {
+      return rootEditor.registerCommand(
+        FOCUS_COMMAND,
+        () => {
+          r.pub(inFocus$, true)
+          return false
+        },
+        COMMAND_PRIORITY_CRITICAL
+      )
+    },
+    // Fixes select all when frontmatter is present
+    (rootEditor) => {
+      return rootEditor.registerCommand<KeyboardEvent>(
+        KEY_DOWN_COMMAND,
+        (event) => {
+          const { keyCode, ctrlKey, metaKey } = event
+          if (keyCode === 65 && controlOrMeta(metaKey, ctrlKey)) {
+            let shouldOverride = false
+
+            rootEditor.getEditorState().read(() => {
+              shouldOverride = $isDecoratorNode($getRoot().getFirstChild()) || $isDecoratorNode($getRoot().getLastChild())
+            })
+
+            if (shouldOverride) {
+              event.preventDefault()
+              event.stopImmediatePropagation()
+              rootEditor.update(() => {
+                const rootElement = rootEditor.getRootElement() as HTMLDivElement
+                window.getSelection()?.selectAllChildren(rootElement)
+                rootElement.focus({
+                  preventScroll: true
+                })
+              })
+              return true
+            }
+          }
+
+          return false
+        },
+        COMMAND_PRIORITY_CRITICAL
+      )
+    }
+  ])
+})
+
+export const createActiveEditorSubscription$ = Appender(activeEditorSubscriptions$, (r, sig$) => {
+  r.pub(sig$, [
+    (editor) => {
+      return editor.registerUpdateListener(({ editorState }) => {
+        editorState.read(() => {
+          handleSelectionChange(r)
+        })
+      })
+    },
+    (editor) => {
+      return editor.registerCommand(
+        BLUR_COMMAND,
+        (payload) => {
+          const theRootEditor = r.getValue(rootEditor$)
+          if (theRootEditor) {
+            const movingOutside = !theRootEditor.getRootElement()?.contains(payload.relatedTarget as Node)
+            if (movingOutside) {
+              r.pubIn({
+                [inFocus$]: false,
+                [onBlur$]: payload
+              })
+            }
+          }
+          return false
+        },
+        COMMAND_PRIORITY_CRITICAL
+      )
+    }
+  ])
+})
+
+function tryImportingMarkdown(r: Realm, markdownValue: string) {
+  try {
+    ////////////////////////
+    // Import initial value
+    ////////////////////////
+    importMarkdownToLexical({
+      root: $getRoot(),
+      visitors: r.getValue(importVisitors$),
+      mdastExtensions: r.getValue(mdastExtensions$),
+      markdown: markdownValue,
+      syntaxExtensions: r.getValue(syntaxExtensions$)
+    })
+    r.pub(markdownProcessingError$, null)
+  } catch (e) {
+    if (e instanceof MarkdownParseError || e instanceof UnrecognizedMarkdownConstructError) {
+      r.pubIn({
+        [markdown$]: markdownValue,
+        [markdownProcessingError$]: {
+          error: e.message,
+          source: markdownValue
+        }
+      })
+    } else {
+      throw e
+    }
+  }
+}
+
+// gets bound to the root editor state getter
+export const initialRootEditorState$ = Cell<InitialEditorStateType | null>(null, (r) => {
+  r.pub(initialRootEditorState$, (theRootEditor) => {
+    r.pub(rootEditor$, theRootEditor)
+    r.pub(activeEditor$, theRootEditor)
+
+    tryImportingMarkdown(r, r.getValue(initialMarkdown$))
+
+    const autoFocusValue = r.getValue(autoFocus$)
+    if (autoFocusValue) {
+      if (autoFocusValue === true) {
+        // Default 'on' state
+        setTimeout(() => theRootEditor.focus(noop, { defaultSelection: 'rootStart' }))
+        return
+      }
+      setTimeout(() =>
+        theRootEditor.focus(noop, {
+          defaultSelection: autoFocusValue.defaultSelection ?? 'rootStart'
+        })
+      )
+    }
+  })
+})
+
+export const composerChildren$ = Cell<React.ComponentType[]>([])
+export const addComposerChild$ = Appender(composerChildren$)
+
+export const topAreaChildren$ = Cell<React.ComponentType[]>([])
+export const addTopAreaChild$ = Appender(topAreaChildren$)
+
+export const editorWrappers$ = Cell<React.ComponentType<{ children: React.ReactNode }>[]>([])
+export const addEditorWrapper$ = Appender(editorWrappers$)
+
+export const nestedEditorChildren$ = Cell<React.ComponentType[]>([])
+export const addNestedEditorChild$ = Appender(nestedEditorChildren$)
+
+export const historyState$ = Cell(createEmptyHistoryState())
+
+export const currentBlockType$ = Cell<BlockType | ''>('')
+export const applyBlockType$ = Signal<BlockType>()
+
+export const convertSelectionToNode$ = Signal<() => ElementNode>((r) => {
+  r.sub(r.pipe(convertSelectionToNode$, withLatestFrom(activeEditor$)), ([factory, editor]) => {
     editor?.update(() => {
       const selection = $getSelection()
       if ($isRangeSelection(selection)) {
@@ -458,10 +467,10 @@ export const coreSystem = system((r) => {
       }
     })
   })
+})
 
-  const insertDecoratorNode = r.node<() => DecoratorNode<unknown>>()
-
-  r.sub(r.pipe(insertDecoratorNode, r.o.withLatestFrom(activeEditor)), ([nodeFactory, theEditor]) => {
+export const insertDecoratorNode$ = Signal<() => DecoratorNode<unknown>>((r) => {
+  r.sub(r.pipe(insertDecoratorNode$, withLatestFrom(activeEditor$)), ([nodeFactory, theEditor]) => {
     theEditor?.focus(
       () => {
         theEditor.getEditorState().read(() => {
@@ -496,90 +505,11 @@ export const coreSystem = system((r) => {
       { defaultSelection: 'rootEnd' }
     )
   })
+})
 
-  r.sub(r.pipe(readOnly, r.o.withLatestFrom(rootEditor)), ([readOnly, theRootEditor]) => {
-    theRootEditor?.setEditable(!readOnly)
-  })
-
-  return {
-    // state
-    activeEditor,
-    inFocus,
-    historyState,
-    currentSelection,
-
-    // jsx
-    jsxIsAvailable,
-    jsxComponentDescriptors,
-
-    // lexical editor
-    initialRootEditorState,
-    rootEditor,
-    createRootEditorSubscription,
-    createActiveEditorSubscription,
-
-    // import
-    importVisitors,
-    syntaxExtensions,
-    mdastExtensions,
-    usedLexicalNodes,
-    addImportVisitor,
-    addLexicalNode,
-    addSyntaxExtension,
-    addMdastExtension,
-
-    // export
-    toMarkdownExtensions,
-    toMarkdownOptions,
-    addToMarkdownExtension,
-    addExportVisitor,
-    exportVisitors,
-
-    // markdown strings
-    initialMarkdown,
-    setMarkdown,
-    markdown,
-    markdownSignal,
-
-    // DOM
-    editorRootElementRef,
-    contentEditableClassName,
-    placeholder,
-    autoFocus,
-    readOnly,
-
-    // child controls
-    composerChildren,
-    addComposerChild,
-
-    topAreaChildren,
-    addTopAreaChild,
-
-    nestedEditorChildren,
-    addNestedEditorChild,
-
-    editorWrappers,
-    addEditorWrapper,
-
-    // editor content state and commands
-    currentFormat,
-    editorInFocus,
-    applyFormat,
-    currentBlockType,
-    applyBlockType,
-    convertSelectionToNode,
-    insertDecoratorNode,
-
-    // Events
-    onBlur,
-
-    iconComponentFor,
-
-    // error handling
-    markdownProcessingError,
-    markdownErrorSignal
-  }
-}, [])
+export type ViewMode = 'rich-text' | 'source' | 'diff'
+export const viewMode$ = Cell<ViewMode>('rich-text')
+export const markdownSourceEditorValue$ = Cell('')
 
 interface CorePluginParams {
   initialMarkdown: string
@@ -595,60 +525,53 @@ interface CorePluginParams {
   suppressHtmlProcessing?: boolean
 }
 
-export const [
-  /** @internal */
-  corePlugin,
-  /** @internal */
-  corePluginHooks
-] = realmPlugin({
-  id: 'core',
-  systemSpec: coreSystem,
+export const corePlugin = realmPlugin<CorePluginParams>({
+  init(r, params) {
+    r.pubIn({
+      [initialMarkdown$]: params.initialMarkdown.trim(),
+      [iconComponentFor$]: params.iconComponentFor,
+      [addImportVisitor$]: [
+        MdastRootVisitor,
+        MdastParagraphVisitor,
+        MdastTextVisitor,
+        MdastFormattingVisitor,
+        MdastInlineCodeVisitor,
+        MdastBreakVisitor
+      ],
+      [addLexicalNode$]: [ParagraphNode, TextNode, GenericHTMLNode],
+      [addExportVisitor$]: [
+        LexicalRootVisitor,
+        LexicalParagraphVisitor,
+        LexicalTextVisitor,
+        LexicalLinebreakVisitor,
+        LexicalGenericHTMLVisitor
+      ],
 
-  applyParamsToSystem(realm, params: CorePluginParams) {
-    realm.pubKeys({
-      contentEditableClassName: params.contentEditableClassName,
-      toMarkdownOptions: params.toMarkdownOptions,
-      autoFocus: params.autoFocus,
-      placeholder: params.placeholder,
-      readOnly: params.readOnly
+      [addComposerChild$]: SharedHistoryPlugin
     })
-    realm.singletonSubKey('markdownSignal', params.onChange)
-    realm.singletonSubKey('onBlur', params.onBlur)
-    realm.singletonSubKey('markdownErrorSignal', params.onError)
-  },
-
-  init(realm, params: CorePluginParams) {
-    realm.pubKey('initialMarkdown', params.initialMarkdown.trim())
-    realm.pubKey('iconComponentFor', params.iconComponentFor)
-
-    // core import visitors
-    realm.pubKey('addImportVisitor', MdastRootVisitor)
-    realm.pubKey('addImportVisitor', MdastParagraphVisitor)
-    realm.pubKey('addImportVisitor', MdastTextVisitor)
-    realm.pubKey('addImportVisitor', MdastFormattingVisitor)
-    realm.pubKey('addImportVisitor', MdastInlineCodeVisitor)
-    realm.pubKey('addImportVisitor', MdastBreakVisitor)
-
-    // basic lexical nodes
-    realm.pubKey('addLexicalNode', ParagraphNode)
-    realm.pubKey('addLexicalNode', TextNode)
-    realm.pubKey('addLexicalNode', GenericHTMLNode)
-
-    // core export visitors
-    realm.pubKey('addExportVisitor', LexicalRootVisitor)
-    realm.pubKey('addExportVisitor', LexicalParagraphVisitor)
-    realm.pubKey('addExportVisitor', LexicalTextVisitor)
-    realm.pubKey('addExportVisitor', LexicalLinebreakVisitor)
-    realm.pubKey('addExportVisitor', LexicalGenericHTMLVisitor)
-
-    realm.pubKey('addComposerChild', SharedHistoryPlugin)
 
     // Use the JSX extension to parse HTML
     if (!params.suppressHtmlProcessing) {
-      realm.pubKey('addMdastExtension', mdxJsxFromMarkdown())
-      realm.pubKey('addSyntaxExtension', mdxJsx())
-      realm.pubKey('addToMarkdownExtension', mdxJsxToMarkdown())
-      realm.pubKey('addImportVisitor', MdastHTMLVisitor)
+      r.pubIn({
+        [addMdastExtension$]: mdxJsxFromMarkdown(),
+        [addSyntaxExtension$]: mdxJsx(),
+        [addToMarkdownExtension$]: mdxJsxToMarkdown(),
+        [addImportVisitor$]: MdastHTMLVisitor
+      })
     }
+  },
+
+  update(realm, params: CorePluginParams) {
+    realm.pubIn({
+      [contentEditableClassName$]: params.contentEditableClassName,
+      [toMarkdownOptions$]: params.toMarkdownOptions,
+      [autoFocus$]: params.autoFocus,
+      [placeholder$]: params.placeholder,
+      [readOnly$]: params.readOnly
+    })
+
+    realm.singletonSub(markdownSignal$, params.onChange)
+    realm.singletonSub(onBlur$, params.onBlur)
+    realm.singletonSub(markdownErrorSignal$, params.onError)
   }
 })
