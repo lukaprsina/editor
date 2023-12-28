@@ -556,6 +556,8 @@ interface CorePluginParams {
 
 export const corePlugin = realmPlugin<CorePluginParams>({
   init(r, params) {
+    r.register(createRootEditorSubscription$)
+    r.register(createActiveEditorSubscription$)
     r.pubIn({
       [initialMarkdown$]: params?.initialMarkdown.trim(),
       [iconComponentFor$]: params?.iconComponentFor,
