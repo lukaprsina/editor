@@ -140,6 +140,6 @@ export const sandpackPlugin = realmPlugin<{ sandpackConfig: SandpackConfig }>({
     })
   },
   update(realm, params) {
-    realm.pub(sandpackConfig$, params.sandpackConfig)
+    realm.pub(sandpackConfig$, params?.sandpackConfig)
   }
 })

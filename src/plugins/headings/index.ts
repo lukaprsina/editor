@@ -64,16 +64,16 @@ interface HeadingsPluginParams {
 /**
  * @internal
  */
-export const headingsPlugin = realmPlugin({
-  update(realm, params?: HeadingsPluginParams) {
-    realm.pub(allowedHeadingLevels$, params?.allowedHeadingLevels ?? ALL_HEADING_LEVELS)
-  },
-  init: (realm) => {
+export const headingsPlugin = realmPlugin<HeadingsPluginParams | undefined>({
+  init(realm) {
     realm.pubIn({
       [addActivePlugin$]: 'headings',
       [addImportVisitor$]: MdastHeadingVisitor,
       [addLexicalNode$]: HeadingNode,
       [addExportVisitor$]: LexicalHeadingVisitor
     })
+  },
+  update(realm, params) {
+    realm.pub(allowedHeadingLevels$, params?.allowedHeadingLevels ?? ALL_HEADING_LEVELS)
   }
 })

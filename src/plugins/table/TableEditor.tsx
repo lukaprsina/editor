@@ -30,7 +30,6 @@ import styles from '../../styles/ui.module.css'
 import { isPartOftheEditorUI } from '../../utils/isPartOftheEditorUI'
 import { uuidv4 } from '../../utils/uuid4'
 import {
-  corePluginHooks,
   editorRootElementRef$,
   exportVisitors$,
   iconComponentFor$,
@@ -41,7 +40,7 @@ import {
   rootEditor$,
   usedLexicalNodes$
 } from '../core'
-import { useCell, useCellValues } from '@mdxeditor/gurx'
+import { useCellValues } from '@mdxeditor/gurx'
 
 const AlignToTailwindClassMap = {
   center: styles.centeredCell,
@@ -388,7 +387,7 @@ const CellEditor: React.FC<CellProps> = ({ focus, setActiveCell, parentEditor, l
         (payload) => {
           const relatedTarget = payload.relatedTarget as HTMLElement | null
 
-          if (isPartOftheEditorUI(relatedTarget, rootEditor.getRootElement()!)) {
+          if (isPartOftheEditorUI(relatedTarget, rootEditor!.getRootElement()!)) {
             return false
           }
           saveAndFocus(null)

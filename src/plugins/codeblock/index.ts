@@ -91,12 +91,12 @@ export interface CodeBlockPluginParams {
   defaultCodeBlockLanguage?: string
 }
 
-export const codeBlockPlugin = realmPlugin({
-  update(realm, params?: CodeBlockPluginParams) {
+export const codeBlockPlugin = realmPlugin<CodeBlockPluginParams>({
+  update(realm, params) {
     realm.pub(defaultCodeBlockLanguage$, params?.defaultCodeBlockLanguage || '')
   },
 
-  init(realm, params: CodeBlockPluginParams) {
+  init(realm, params) {
     realm.pubIn({
       [addActivePlugin$]: 'codeblock',
       [codeBlockEditorDescriptors$]: params?.codeBlockEditorDescriptors || [],

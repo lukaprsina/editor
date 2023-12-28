@@ -4,7 +4,7 @@ import { CodeBlockEditorProps } from '../codeblock'
 import { useCodeMirrorRef } from './useCodeMirrorRef'
 import { SandpackCodeEditor, SandpackLayout, SandpackPreview, SandpackProvider, useSandpack } from '@codesandbox/sandpack-react'
 import { useCodeBlockEditorContext } from '../codeblock/CodeBlockNode'
-import { corePluginHooks, readOnly$ } from '../core'
+import { readOnly$ } from '../core'
 import { useCellValue } from '@mdxeditor/gurx'
 
 interface CodeUpdateEmitterProps {

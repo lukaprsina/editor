@@ -27,15 +27,15 @@ export const insertCodeMirror$ = Signal<{ language: string; code: string }>((r) 
   )
 })
 
-export const codeMirrorPlugin = realmPlugin({
-  update(r, params: { codeBlockLanguages: Record<string, string> }) {
-    r.pub(codeBlockLanguages$, params.codeBlockLanguages)
+export const codeMirrorPlugin = realmPlugin<{ codeBlockLanguages: Record<string, string> }>({
+  update(r, params) {
+    r.pub(codeBlockLanguages$, params?.codeBlockLanguages)
   },
 
-  init(r, { codeBlockLanguages }) {
+  init(r, params) {
     r.pub(appendCodeBlockEditorDescriptor$, {
       match(language, meta) {
-        return codeBlockLanguages.hasOwnProperty(language) && meta === ''
+        return Boolean(params?.codeBlockLanguages.hasOwnProperty(language)) && meta === ''
       },
       priority: 1,
       Editor: CodeMirrorEditor

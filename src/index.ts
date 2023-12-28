@@ -4,6 +4,8 @@
  */
 import './styles/globals.css'
 
+export * from '@mdxeditor/gurx'
+
 // editor component
 export * from './MDXEditor'
 
@@ -87,4 +89,4 @@ export * from './utils/uuid4'
 export * from './utils/voidEmitter'
 export * from './utils/whitespaceConversion'
 
-export * from './gurx'
+export * from './RealmWithPlugins'

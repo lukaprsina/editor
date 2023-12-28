@@ -3,9 +3,9 @@ import type { EditorConfig, LexicalEditor, LexicalNode, NodeKey, SerializedLexic
 import { DecoratorNode } from 'lexical'
 import React from 'react'
 import { NestedEditorsContext } from '../core/NestedLexicalEditor'
-import { MdastJsx, jsxPluginHooks } from '.'
+import { MdastJsx } from '.'
 import { VoidEmitter, voidEmitter } from '../../utils/voidEmitter'
-import { useCellValue, useCellValues } from '@mdxeditor/gurx'
+import { useCellValue } from '@mdxeditor/gurx'
 import { jsxComponentDescriptors$ } from '../core'
 
 /**

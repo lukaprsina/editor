@@ -3,8 +3,9 @@ import type { EditorConfig, LexicalEditor, LexicalNode, NodeKey, SerializedLexic
 import { DecoratorNode } from 'lexical'
 import { Directive } from 'mdast-util-directive'
 import { NestedEditorsContext } from '../core/NestedLexicalEditor'
-import { directivesPluginHooks } from '.'
+import { directiveDescriptors$ } from '.'
 import { VoidEmitter, voidEmitter } from '../../utils/voidEmitter'
+import { useCellValues } from '@mdxeditor/gurx'
 
 /**
  * A serialized representation of an {@link DirectiveNode}.
@@ -101,7 +102,7 @@ export function DirectiveEditorContainer(props: {
   focusEmitter: VoidEmitter
 }) {
   const { mdastNode } = props
-  const [directiveDescriptors] = directivesPluginHooks.useEmitterValues('directiveDescriptors')
+  const [directiveDescriptors] = useCellValues(directiveDescriptors$)
   const descriptor = directiveDescriptors.find((descriptor) => descriptor.testNode(mdastNode))
   if (!descriptor) {
     throw new Error(`No descriptor found for directive ${mdastNode.name}`)

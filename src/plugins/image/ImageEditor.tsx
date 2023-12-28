@@ -20,12 +20,12 @@ import {
   KEY_ESCAPE_COMMAND,
   SELECTION_CHANGE_COMMAND
 } from 'lexical'
-import { disableImageResize$, imagePluginHooks, imagePreviewHandler$ } from '.'
+import { disableImageResize$, imagePreviewHandler$, openEditImageDialog$ } from '.'
 import styles from '../../styles/ui.module.css'
-import { corePluginHooks, iconComponentFor$ } from '../core'
+import { iconComponentFor$ } from '../core'
 import { $isImageNode } from './ImageNode'
 import ImageResizer from './ImageResizer'
-import { useCellValues } from '@mdxeditor/gurx'
+import { useCellValues, usePublisher } from '@mdxeditor/gurx'
 
 export interface ImageEditorProps {
   nodeKey: string
@@ -90,7 +90,7 @@ export function ImageEditor({ src, title, alt, nodeKey, width, height }: ImageEd
     iconComponentFor$
   )
 
-  const openEditImageDialog = imagePluginHooks.usePublisher('openEditImageDialog')
+  const openEditImageDialog = usePublisher(openEditImageDialog$)
   const imageRef = React.useRef<null | HTMLImageElement>(null)
   const buttonRef = React.useRef<HTMLButtonElement | null>(null)
   const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection(nodeKey)
@@ -161,7 +161,7 @@ export function ImageEditor({ src, title, alt, nodeKey, width, height }: ImageEd
     } else {
       setImageSource(src)
     }
-  }, [src, imagePreviewHandler])
+  }, [src, imagePreviewHandler, initialImagePath])
 
   React.useEffect(() => {
     let isMounted = true

@@ -1,9 +1,10 @@
 import React from 'react'
 import styles from '../../../styles/ui.module.css'
 import { CodeBlockNode } from '../../codeblock/CodeBlockNode'
-import { corePluginHooks } from '../../core'
-import { sandpackPluginHooks } from '../../sandpack'
+import { activeEditor$, editorInFocus$, iconComponentFor$ } from '../../core'
+import { sandpackConfig$ } from '../../sandpack'
 import { ButtonWithTooltip } from '.././primitives/toolbar'
+import { useCellValues } from '@mdxeditor/gurx'
 
 /**
  * A component that displays the focused live code block's name.
@@ -11,9 +12,13 @@ import { ButtonWithTooltip } from '.././primitives/toolbar'
  * See {@link ConditionalContents} for an example on how to display the dropdown only when a sandpack editor is in focus.
  */
 export const ShowSandpackInfo = () => {
-  const [editorInFocus, theEditor, iconComponentFor] = corePluginHooks.useEmitterValues('editorInFocus', 'activeEditor', 'iconComponentFor')
+  const [editorInFocus, theEditor, iconComponentFor, sandpackConfig] = useCellValues(
+    editorInFocus$,
+    activeEditor$,
+    iconComponentFor$,
+    sandpackConfig$
+  )
   const sandpackNode = editorInFocus!.rootNode as CodeBlockNode
-  const [sandpackConfig] = sandpackPluginHooks.useEmitterValues('sandpackConfig')
 
   const preset = sandpackConfig.presets.find((preset) => preset.meta === sandpackNode.getMeta())!
 

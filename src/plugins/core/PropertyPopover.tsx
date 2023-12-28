@@ -4,8 +4,9 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import styles from '../../styles/ui.module.css'
 
+import { useCellValue } from '@mdxeditor/gurx'
+import { iconComponentFor$ } from '.'
 import { PopoverContent, PopoverPortal } from './ui/PopoverUtils'
-import { corePluginHooks } from '.'
 
 /**
  * The properties of the {@link PropertyPopover} React component.
@@ -31,7 +32,7 @@ export interface PropertyPopoverProps {
  */
 export const PropertyPopover: React.FC<PropertyPopoverProps> = ({ title, properties, onChange }) => {
   const [open, setOpen] = React.useState(false)
-  const [iconComponentFor] = corePluginHooks.useEmitterValues('iconComponentFor')
+  const iconComponentFor = useCellValue(iconComponentFor$)
 
   const { register, handleSubmit, reset } = useForm({ defaultValues: properties })
 

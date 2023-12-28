@@ -158,7 +158,7 @@ export interface JsxPluginParams {
 }
 
 export const jsxPlugin = realmPlugin<JsxPluginParams>({
-  init: (realm, _: JsxPluginParams) => {
+  init: (realm) => {
     realm.pubIn({
       // import
       [jsxIsAvailable$]: true,

@@ -1,9 +1,10 @@
+import { useCellValues } from '@mdxeditor/gurx'
 import React from 'react'
-import { corePluginHooks } from '../../core'
-import { Select } from '.././primitives/select'
-import { CodeBlockNode } from '../../codeblock/CodeBlockNode'
-import { codeMirrorHooks } from '../../codemirror'
 import styles from '../../../styles/ui.module.css'
+import { CodeBlockNode } from '../../codeblock/CodeBlockNode'
+import { codeBlockLanguages$ } from '../../codemirror'
+import { activeEditor$, editorInFocus$ } from '../../core'
+import { Select } from '.././primitives/select'
 
 /**
  * A component that allows the user to change the code block language of the current selection.
@@ -11,9 +12,8 @@ import styles from '../../../styles/ui.module.css'
  * See {@link ConditionalContents} for an example on how to display the dropdown only when a code block is in focus.
  */
 export const ChangeCodeMirrorLanguage = () => {
-  const [editorInFocus, theEditor] = corePluginHooks.useEmitterValues('editorInFocus', 'activeEditor')
+  const [editorInFocus, theEditor, codeBlockLanguages] = useCellValues(editorInFocus$, activeEditor$, codeBlockLanguages$)
   const codeBlockNode = editorInFocus!.rootNode as CodeBlockNode
-  const [codeBlockLanguages] = codeMirrorHooks.useEmitterValues('codeBlockLanguages')
 
   return (
     <div className={styles.selectWithLabel}>

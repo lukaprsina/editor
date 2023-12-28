@@ -17,7 +17,17 @@ import {
 import * as Mdast from 'mdast'
 import { Node } from 'unist'
 import React from 'react'
-import { NESTED_EDITOR_UPDATED_COMMAND, corePluginHooks } from '.'
+import {
+  NESTED_EDITOR_UPDATED_COMMAND,
+  editorInFocus$,
+  exportVisitors$,
+  importVisitors$,
+  jsxComponentDescriptors$,
+  jsxIsAvailable$,
+  nestedEditorChildren$,
+  rootEditor$,
+  usedLexicalNodes$
+} from '.'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable.js'
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary.js'
 import { LexicalNestedComposer } from '@lexical/react/LexicalNestedComposer.js'
@@ -30,6 +40,7 @@ import { SharedHistoryPlugin } from './SharedHistoryPlugin'
 import { mergeRegister } from '@lexical/utils'
 import { VoidEmitter } from '../../utils/voidEmitter'
 import { isPartOftheEditorUI } from '../../utils/isPartOftheEditorUI'
+import { useCellValues, usePublisher } from '@mdxeditor/gurx'
 
 /**
  * The value of the {@link NestedEditorsContext} React context.
@@ -164,19 +175,19 @@ export const NestedLexicalEditor = function <T extends Mdast.Content>(props: Nes
   const updateMdastNode = useMdastNodeUpdater<T>()
   const removeNode = useLexicalNodeRemove()
   const content = getContent(mdastNode)
-  const [rootEditor] = corePluginHooks.useEmitterValues('rootEditor')
 
-  const [importVisitors, exportVisitors, usedLexicalNodes, jsxComponentDescriptors, jsxIsAvailable, nestedEditorChildren] =
-    corePluginHooks.useEmitterValues(
-      'importVisitors',
-      'exportVisitors',
-      'usedLexicalNodes',
-      'jsxComponentDescriptors',
-      'jsxIsAvailable',
-      'nestedEditorChildren'
+  const [rootEditor, importVisitors, exportVisitors, usedLexicalNodes, jsxComponentDescriptors, jsxIsAvailable, nestedEditorChildren] =
+    useCellValues(
+      rootEditor$,
+      importVisitors$,
+      exportVisitors$,
+      usedLexicalNodes$,
+      jsxComponentDescriptors$,
+      jsxIsAvailable$,
+      nestedEditorChildren$
     )
 
-  const setEditorInFocus = corePluginHooks.usePublisher('editorInFocus')
+  const setEditorInFocus = usePublisher(editorInFocus$)
 
   const [editor] = React.useState(() => {
     const editor = createEditor({

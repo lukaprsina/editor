@@ -6,16 +6,16 @@ const cell$ = Cell('foo', (r) => {
   r.sub(cell$, (v) => console.log(v))
 })
 
-const dumbPlugin = realmPlugin({
-  init: (cellValue: string) => {
-    return {
+const dumbPlugin = realmPlugin<string>({
+  init: (realm, cellValue) => {
+    realm.pubIn({
       [cell$]: cellValue
-    }
+    })
   },
-  update: (cellValue: string) => {
-    return {
+  update: (realm, cellValue) => {
+    realm.pubIn({
       [cell$]: cellValue
-    }
+    })
   }
 })
 

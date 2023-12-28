@@ -3,7 +3,8 @@ import * as RadixSelect from '@radix-ui/react-select'
 import classNames from 'classnames'
 import styles from '../../../styles/ui.module.css'
 import { TooltipWrap } from './TooltipWrap'
-import { corePluginHooks } from '../../core'
+import { editorRootElementRef$, iconComponentFor$, readOnly$ } from '../../core'
+import { useCellValue, useCellValues } from '@mdxeditor/gurx'
 
 /**
  * @internal
@@ -22,7 +23,7 @@ export const SelectItem = React.forwardRef<HTMLDivElement | null, { className?: 
  * @internal
  */
 export const SelectTrigger: React.FC<{ title: string; placeholder: string; className?: string }> = ({ title, placeholder, className }) => {
-  const [readOnly, iconComponentFor] = corePluginHooks.useEmitterValues('readOnly', 'iconComponentFor')
+  const [readOnly, iconComponentFor] = useCellValues(readOnly$, iconComponentFor$)
   return (
     <TooltipWrap title={title}>
       <RadixSelect.Trigger
@@ -45,7 +46,7 @@ export const SelectContent: React.FC<{ children: React.ReactNode; className?: st
   children,
   className = styles.selectContainer
 }) => {
-  const [editorRootElementRef] = corePluginHooks.useEmitterValues('editorRootElementRef')
+  const editorRootElementRef = useCellValue(editorRootElementRef$)
 
   return (
     <RadixSelect.Portal container={editorRootElementRef?.current}>
@@ -64,7 +65,7 @@ export const SelectButtonTrigger: React.FC<{ children: React.ReactNode; title: s
   title,
   className
 }) => {
-  const [readOnly, iconComponentFor] = corePluginHooks.useEmitterValues('readOnly', 'iconComponentFor')
+  const [readOnly, iconComponentFor] = useCellValues(readOnly$, iconComponentFor$)
   return (
     <TooltipWrap title={title}>
       <RadixSelect.Trigger className={classNames(styles.toolbarButtonSelectTrigger, className)} disabled={readOnly}>

@@ -1,8 +1,9 @@
 import React from 'react'
 import { DecoratorNode, EditorConfig, LexicalEditor, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical'
-import { CodeBlockEditorProps, codeBlockPluginHooks } from '.'
+import { CodeBlockEditorProps, codeBlockEditorDescriptors$ } from '.'
 import { voidEmitter } from '../../utils/voidEmitter'
 import { NESTED_EDITOR_UPDATED_COMMAND } from '../core'
+import { useCellValue } from '@mdxeditor/gurx'
 
 /**
  * The options necessary to construct a new code block node.
@@ -211,7 +212,7 @@ export function useCodeBlockEditorContext() {
 }
 
 export function CodeBlockEditorContainer(props: CodeBlockEditorContainerProps) {
-  const [codeBlockEditorDescriptors] = codeBlockPluginHooks.useEmitterValues('codeBlockEditorDescriptors')
+  const codeBlockEditorDescriptors = useCellValue(codeBlockEditorDescriptors$)
 
   const descriptor = codeBlockEditorDescriptors
     .sort((a, b) => b.priority - a.priority)

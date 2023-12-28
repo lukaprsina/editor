@@ -5,7 +5,8 @@ import React from 'react'
 import styles from '../../../styles/ui.module.css'
 import { TooltipWrap } from './TooltipWrap'
 import { SelectButtonTrigger, SelectContent, SelectItem } from './select'
-import { EditorInFocus, corePluginHooks } from '../../core'
+import { EditorInFocus, editorInFocus$, readOnly$ } from '../../core'
+import { useCellValue } from '@mdxeditor/gurx'
 
 //
 // function decorate<P extends { className?: string | undefined }>(Component: React.ComponentType<P>, decoratedProps: P) {
@@ -202,7 +203,7 @@ export interface ButtonOrDropdownButtonProps<T extends string> {
  * @see {@link ButtonOrDropdownButtonProps} for the properties of the React component.
  */
 export const ButtonOrDropdownButton = <T extends string>(props: ButtonOrDropdownButtonProps<T>) => {
-  const [readOnly] = corePluginHooks.useEmitterValues('readOnly')
+  const readOnly = useCellValue(readOnly$)
   return (
     <>
       {props.items.length === 1 ? (
@@ -289,7 +290,7 @@ export interface ConditionalContentsProps {
  * ```
  */
 export const ConditionalContents: React.FC<ConditionalContentsProps> = ({ options }) => {
-  const [editorInFocus] = corePluginHooks.useEmitterValues('editorInFocus')
+  const editorInFocus = useCellValue(editorInFocus$)
   const contents = React.useMemo(() => {
     const option = options.find((option) => {
       if (isConditionalContentsOption(option)) {

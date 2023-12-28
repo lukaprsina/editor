@@ -5,14 +5,22 @@ import * as Popover from '@radix-ui/react-popover'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import React from 'react'
 
-import { activeEditor$, corePluginHooks, editorRootElementRef$, iconComponentFor$ } from '@/plugins/core'
+import { activeEditor$, editorRootElementRef$, iconComponentFor$ } from '@/plugins/core'
 import { DownshiftAutoComplete } from '@/plugins/core/ui/DownshiftAutoComplete'
 import styles from '@/styles/ui.module.css'
 import classNames from 'classnames'
 import { createCommand, LexicalCommand } from 'lexical'
 import { useForm } from 'react-hook-form'
-import { linkAutocompleteSuggestions$, linkDialogPluginHooks, linkDialogState$ } from '.'
-import { useCellValues } from '@mdxeditor/gurx'
+import {
+  cancelLinkEdit$,
+  linkAutocompleteSuggestions$,
+  linkDialogState$,
+  onWindowChange$,
+  removeLink$,
+  switchFromPreviewToLinkEdit$,
+  updateLink$
+} from '.'
+import { useCellValues, usePublisher } from '@mdxeditor/gurx'
 
 export const OPEN_LINK_DIALOG: LexicalCommand<undefined> = createCommand()
 
@@ -95,11 +103,11 @@ export const LinkDialog: React.FC = () => {
     linkDialogState$,
     linkAutocompleteSuggestions$
   )
-  const publishWindowChange = linkDialogPluginHooks.usePublisher('onWindowChange')
-  const updateLink = linkDialogPluginHooks.usePublisher('updateLink')
-  const cancelLinkEdit = linkDialogPluginHooks.usePublisher('cancelLinkEdit')
-  const switchFromPreviewToLinkEdit = linkDialogPluginHooks.usePublisher('switchFromPreviewToLinkEdit')
-  const removeLink = linkDialogPluginHooks.usePublisher('removeLink')
+  const publishWindowChange = usePublisher(onWindowChange$)
+  const updateLink = usePublisher(updateLink$)
+  const cancelLinkEdit = usePublisher(cancelLinkEdit$)
+  const switchFromPreviewToLinkEdit = usePublisher(switchFromPreviewToLinkEdit$)
+  const removeLink = usePublisher(removeLink$)
 
   React.useEffect(() => {
     const update = () => {
@@ -192,7 +200,7 @@ export const LinkDialog: React.FC = () => {
                 </Tooltip.Root>
               </Tooltip.Provider>
 
-              <ActionButton title="Remove link" aria-label="Remove link" onClick={() => removeLink(true)}>
+              <ActionButton title="Remove link" aria-label="Remove link" onClick={() => removeLink()}>
                 {iconComponentFor('link_off')}
               </ActionButton>
             </>

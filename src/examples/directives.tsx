@@ -8,7 +8,6 @@ import {
   codeBlockPlugin,
   codeMirrorPlugin,
   directivesPlugin,
-  directivesPluginHooks,
   headingsPlugin,
   linkPlugin,
   listsPlugin,
@@ -16,8 +15,6 @@ import {
   quotePlugin,
   toolbarPlugin,
   realmPlugin,
-  system,
-  coreSystem,
   CreateImageNodeOptions,
   $createImageNode,
   imagePlugin,
@@ -26,7 +23,13 @@ import {
   LexicalExportVisitor,
   $isImageNode,
   diffSourcePlugin,
-  DiffSourceToggleWrapper
+  DiffSourceToggleWrapper,
+  insertDirective$,
+  addExportVisitor$,
+  addImportVisitor$,
+  addMdastExtension$,
+  addSyntaxExtension$,
+  addToMarkdownExtension$
 } from '../'
 
 import * as Mdast from 'mdast'
@@ -35,6 +38,7 @@ import admonitionMarkdown from './assets/admonition.md?raw'
 import { TextDirective, Directive, LeafDirective, directiveFromMarkdown, directiveToMarkdown } from 'mdast-util-directive'
 import { directive } from 'micromark-extension-directive'
 import { ElementNode } from 'lexical'
+import { usePublisher } from '@mdxeditor/gurx'
 
 const youtubeMarkdown = `
 This should be an youtube video:
@@ -53,7 +57,7 @@ const GenericDirectiveDescriptor: DirectiveDescriptor = {
 }
 
 const YouTubeButton = () => {
-  const insertDirective = directivesPluginHooks.usePublisher('insertDirective')
+  const insertDirective = usePublisher(insertDirective$)
 
   return (
     <DialogButton
@@ -246,15 +250,15 @@ const LexicalImageNodeVisitor: LexicalExportVisitor<ImageNode, Directive> = {
   }
 }
 
-const [imageAsDirectivePlugin] = realmPlugin({
-  id: 'imageAsDirective',
-  systemSpec: system(() => ({}), [coreSystem]),
-  init: (realm) => {
-    realm.pubKey('addMdastExtension', directiveFromMarkdown)
-    realm.pubKey('addSyntaxExtension', directive())
-    realm.pubKey('addImportVisitor', MdastImageDirectiveVisitor)
-    realm.pubKey('addExportVisitor', LexicalImageNodeVisitor)
-    realm.pubKey('addToMarkdownExtension', directiveToMarkdown)
+const imageAsDirectivePlugin = realmPlugin({
+  init(realm) {
+    realm.pubIn({
+      [addMdastExtension$]: directiveFromMarkdown,
+      [addSyntaxExtension$]: directive(),
+      [addImportVisitor$]: MdastImageDirectiveVisitor,
+      [addExportVisitor$]: LexicalImageNodeVisitor,
+      [addToMarkdownExtension$]: directiveToMarkdown
+    })
   }
 })
 

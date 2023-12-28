@@ -3,10 +3,10 @@ import classNames from 'classnames'
 import YamlParser from 'js-yaml'
 import React from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
-import { frontmatterDialogOpen$, frontmatterPluginHooks } from '.'
+import { frontmatterDialogOpen$, removeFrontmatter$ } from '.'
 import styles from '../../styles/ui.module.css'
-import { corePluginHooks, editorRootElementRef$, iconComponentFor$, readOnly$ } from '../core'
-import { useCellValues } from '@mdxeditor/gurx'
+import { editorRootElementRef$, iconComponentFor$, readOnly$ } from '../core'
+import { useCellValues, usePublisher } from '@mdxeditor/gurx'
 
 type YamlConfig = { key: string; value: string }[]
 
@@ -22,8 +22,8 @@ export const FrontmatterEditor = ({ yaml, onChange }: FrontmatterEditorProps) =>
     iconComponentFor$,
     frontmatterDialogOpen$
   )
-  const setFrontmatterDialogOpen = frontmatterPluginHooks.usePublisher('frontmatterDialogOpen')
-  const removeFrontmatter = frontmatterPluginHooks.usePublisher('removeFrontmatter')
+  const setFrontmatterDialogOpen = usePublisher(frontmatterDialogOpen$)
+  const removeFrontmatter = usePublisher(removeFrontmatter$)
   const yamlConfig = React.useMemo<YamlConfig>(() => {
     if (!yaml) {
       return []

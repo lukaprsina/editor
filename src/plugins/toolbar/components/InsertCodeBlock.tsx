@@ -1,6 +1,8 @@
 import React from 'react'
 import { ButtonWithTooltip } from '.././primitives/toolbar'
-import { codeBlockPluginHooks } from '../../codeblock/'
+import { insertCodeBlock$ } from '../../codeblock/'
+import { useCellValue, usePublisher } from '@mdxeditor/gurx'
+import { iconComponentFor$ } from '@/plugins/core'
 
 /**
  * A toolbar button that allows the user to insert a fenced code block.
@@ -8,8 +10,8 @@ import { codeBlockPluginHooks } from '../../codeblock/'
  * See the {@link ConditionalContents} documentation for an example.
  */
 export const InsertCodeBlock: React.FC = () => {
-  const insertCodeBlock = codeBlockPluginHooks.usePublisher('insertCodeBlock')
-  const [iconComponentFor] = codeBlockPluginHooks.useEmitterValues('iconComponentFor')
+  const insertCodeBlock = usePublisher(insertCodeBlock$)
+  const iconComponentFor = useCellValue(iconComponentFor$)
   return (
     <ButtonWithTooltip
       title="Insert code block"

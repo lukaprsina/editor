@@ -3,8 +3,8 @@ import { Realm, RealmContext } from '@mdxeditor/gurx'
 import { tap } from './utils/fp'
 
 export interface RealmPluginDefinition<Params> {
-  init?: (realm: Realm, params: Params) => void
-  update?: (realm: Realm, params: Params) => void
+  init?: (realm: Realm, params?: Params) => void
+  update?: (realm: Realm, params?: Params) => void
 }
 
 export interface RealmPlugin {
@@ -12,8 +12,8 @@ export interface RealmPlugin {
   update?: (realm: Realm) => void
 }
 
-export function realmPlugin<Params>(plugin: RealmPluginDefinition<Params>): (params: Params) => RealmPlugin {
-  return function (params: Params) {
+export function realmPlugin<Params>(plugin: RealmPluginDefinition<Params>): (params?: Params) => RealmPlugin {
+  return function (params?: Params) {
     return {
       init: (realm: Realm) => plugin.init?.(realm, params),
       update: (realm: Realm) => plugin.update?.(realm, params)

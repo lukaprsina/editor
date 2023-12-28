@@ -557,8 +557,8 @@ interface CorePluginParams {
 export const corePlugin = realmPlugin<CorePluginParams>({
   init(r, params) {
     r.pubIn({
-      [initialMarkdown$]: params.initialMarkdown.trim(),
-      [iconComponentFor$]: params.iconComponentFor,
+      [initialMarkdown$]: params?.initialMarkdown.trim(),
+      [iconComponentFor$]: params?.iconComponentFor,
       [addImportVisitor$]: [
         MdastRootVisitor,
         MdastParagraphVisitor,
@@ -580,7 +580,7 @@ export const corePlugin = realmPlugin<CorePluginParams>({
     })
 
     // Use the JSX extension to parse HTML
-    if (!params.suppressHtmlProcessing) {
+    if (!params?.suppressHtmlProcessing) {
       r.pubIn({
         [addMdastExtension$]: mdxJsxFromMarkdown(),
         [addSyntaxExtension$]: mdxJsx(),
@@ -590,17 +590,17 @@ export const corePlugin = realmPlugin<CorePluginParams>({
     }
   },
 
-  update(realm, params: CorePluginParams) {
+  update(realm, params) {
     realm.pubIn({
-      [contentEditableClassName$]: params.contentEditableClassName,
-      [toMarkdownOptions$]: params.toMarkdownOptions,
-      [autoFocus$]: params.autoFocus,
-      [placeholder$]: params.placeholder,
-      [readOnly$]: params.readOnly
+      [contentEditableClassName$]: params?.contentEditableClassName,
+      [toMarkdownOptions$]: params?.toMarkdownOptions,
+      [autoFocus$]: params?.autoFocus,
+      [placeholder$]: params?.placeholder,
+      [readOnly$]: params?.readOnly
     })
 
-    realm.singletonSub(markdownSignal$, params.onChange)
-    realm.singletonSub(onBlur$, params.onBlur)
-    realm.singletonSub(markdownErrorSignal$, params.onError)
+    realm.singletonSub(markdownSignal$, params?.onChange)
+    realm.singletonSub(onBlur$, params?.onBlur)
+    realm.singletonSub(markdownErrorSignal$, params?.onError)
   }
 })

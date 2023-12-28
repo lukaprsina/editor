@@ -2,7 +2,6 @@ import React from 'react'
 import {
   DiffSourceToggleWrapper,
   MDXEditor,
-  corePluginHooks,
   diffSourcePlugin,
   headingsPlugin,
   toolbarPlugin,

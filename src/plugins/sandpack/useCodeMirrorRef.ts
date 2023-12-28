@@ -3,12 +3,12 @@ import { $createParagraphNode, $getNodeByKey } from 'lexical'
 import React from 'react'
 import { VoidEmitter } from '../../utils/voidEmitter'
 import { useCodeBlockEditorContext } from '../codeblock/CodeBlockNode'
-import { activeEditor$, corePluginHooks } from '../core'
-import { useCellValue } from '@mdxeditor/gurx'
+import { activeEditor$, editorInFocus$ } from '../core'
+import { useCellValue, usePublisher } from '@mdxeditor/gurx'
 
 export function useCodeMirrorRef(nodeKey: string, editorType: 'codeblock' | 'sandpack', language: string, focusEmitter: VoidEmitter) {
   const activeEditor = useCellValue(activeEditor$)
-  const setEditorInFocus = corePluginHooks.usePublisher('editorInFocus')
+  const setEditorInFocus = usePublisher(editorInFocus$)
   // const setActiveEditorType = usePublisher('activeEditorType')
   const codeMirrorRef = React.useRef<CodeMirrorRef>(null)
   const { lexicalNode } = useCodeBlockEditorContext()

@@ -5,9 +5,10 @@ import React from 'react'
 
 import classNames from 'classnames'
 import { useCombobox } from 'downshift'
-import { corePluginHooks } from '../../core'
+import { editorRootElementRef$, iconComponentFor$, readOnly$ } from '../../core'
 import styles from '../../../styles/ui.module.css'
 import { TooltipWrap } from './TooltipWrap'
+import { useCellValue, useCellValues } from '@mdxeditor/gurx'
 
 /**
  * The properties of the {@link DialogButton} component.
@@ -52,7 +53,7 @@ const MAX_SUGGESTIONS = 20
  */
 export const DialogButton = React.forwardRef<HTMLButtonElement, DialogButtonProps>(
   ({ autocompleteSuggestions = [], submitButtonTitle, dialogInputPlaceholder, onSubmit, tooltipTitle, buttonContent }, forwardedRef) => {
-    const [editorRootElementRef, readOnly] = corePluginHooks.useEmitterValues('editorRootElementRef', 'readOnly')
+    const [editorRootElementRef, readOnly] = useCellValues(editorRootElementRef$, readOnly$)
     const [open, setOpen] = React.useState(false)
 
     const onSubmitCallback = React.useCallback(
@@ -93,7 +94,7 @@ const DialogForm: React.FC<{
   onSubmitCallback: (value: string) => void
 }> = ({ autocompleteSuggestions, onSubmitCallback, dialogInputPlaceholder, submitButtonTitle }) => {
   const [items, setItems] = React.useState(autocompleteSuggestions.slice(0, MAX_SUGGESTIONS))
-  const [iconComponentFor] = corePluginHooks.useEmitterValues('iconComponentFor')
+  const iconComponentFor = useCellValue(iconComponentFor$)
 
   const enableAutoComplete = autocompleteSuggestions.length > 0
 

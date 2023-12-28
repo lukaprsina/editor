@@ -1,17 +1,17 @@
 import React from 'react'
 
-import { cmExtensions$, diffMarkdown$, diffSourcePluginHooks } from '.'
-import { corePluginHooks, markdown$ } from '../core'
+import { cmExtensions$, diffMarkdown$ } from '.'
+import { markdown$, markdownSourceEditorValue$, onBlur$ } from '../core'
 
 import { MergeView } from '@codemirror/merge'
 import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import { COMMON_STATE_CONFIG_EXTENSIONS } from './SourceEditor'
-import { useCellValue, useCellValues } from '@mdxeditor/gurx'
+import { useCellValue, useCellValues, usePublisher } from '@mdxeditor/gurx'
 
 export const DiffViewer: React.FC = () => {
   const [newText, oldText] = useCellValues(markdown$, diffMarkdown$)
-  const updateMarkdown = diffSourcePluginHooks.usePublisher('markdownSourceEditorValue')
+  const updateMarkdown = usePublisher(markdownSourceEditorValue$)
   return <CmMergeView oldMarkdown={oldText} newMarkdown={newText} onUpdate={updateMarkdown} />
 }
 
@@ -24,7 +24,7 @@ interface CmMergeViewProps {
 const CmMergeView: React.FC<CmMergeViewProps> = ({ oldMarkdown, newMarkdown, onUpdate }) => {
   const cmMergeViewRef = React.useRef<MergeView | null>(null)
   const cmExtensions = useCellValue(cmExtensions$)
-  const triggerOnBlur = corePluginHooks.usePublisher('onBlur')
+  const triggerOnBlur = usePublisher(onBlur$)
 
   const ref = React.useCallback(
     (el: HTMLDivElement | null) => {
