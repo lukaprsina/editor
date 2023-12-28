@@ -1,21 +1,14 @@
 import React from 'react'
-import { realmPlugin, system } from '../../gurx'
-import { coreSystem } from '../core'
 import { MdastLinkVisitor } from './MdastLinkVisitor'
 import { LexicalLinkVisitor } from './LexicalLinkVisitor'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { LinkPlugin as LexicalLinkPlugin } from '@lexical/react/LexicalLinkPlugin.js'
 import { LexicalAutoLinkPlugin } from './AutoLinkPlugin'
+import { Cell } from '@mdxeditor/gurx'
+import { realmPlugin } from '@/RealmWithPlugins'
+import { addImportVisitor$, addLexicalNode$, addExportVisitor$, addComposerChild$, activePlugins$, addActivePlugin$ } from '../core'
 
-const linkSystem = system(
-  (r) => {
-    const disableAutoLink = r.node<boolean>(false)
-
-    return { disableAutoLink }
-  },
-  [coreSystem]
-)
-
+export const disableAutoLink$ = Cell(false)
 /**
  * The parameters used to configure the link plugin
  */
@@ -32,26 +25,22 @@ interface LinkPluginParams {
   disableAutoLink?: boolean
 }
 
-/**
- * @internal
- */
-export const [linkPlugin] = realmPlugin({
-  id: 'link',
-  systemSpec: linkSystem,
-
-  init: (realm, params?: LinkPluginParams) => {
+export const linkPlugin = realmPlugin<LinkPluginParams | undefined>({
+  init(realm, params) {
     const disableAutoLink = Boolean(params?.disableAutoLink)
-    realm.pubKey('addImportVisitor', MdastLinkVisitor)
-    realm.pubKey('addLexicalNode', LinkNode)
-    realm.pubKey('addLexicalNode', AutoLinkNode)
-    realm.pubKey('addExportVisitor', LexicalLinkVisitor)
-    realm.pubKey('disableAutoLink', disableAutoLink)
     const linkPluginProps = params?.validateUrl ? { validateUrl: params.validateUrl } : {}
-    realm.pubKey('addComposerChild', () => (
-      <>
-        <LexicalLinkPlugin {...linkPluginProps} />
-        {disableAutoLink ? null : <LexicalAutoLinkPlugin />}
-      </>
-    ))
+    realm.pubIn({
+      [addActivePlugin$]: 'link',
+      [addImportVisitor$]: MdastLinkVisitor,
+      [addLexicalNode$]: [LinkNode, AutoLinkNode],
+      [addExportVisitor$]: LexicalLinkVisitor,
+      [disableAutoLink$]: disableAutoLink,
+      [addComposerChild$]: () => (
+        <>
+          <LexicalLinkPlugin {...linkPluginProps} />
+          {disableAutoLink ? null : <LexicalAutoLinkPlugin />}
+        </>
+      )
+    })
   }
 })

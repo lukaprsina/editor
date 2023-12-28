@@ -1,9 +1,10 @@
 import { CodeBlockVisitor } from './CodeBlockVisitor'
-import { realmPlugin, system } from '../../gurx'
 import { MdastCodeVisitor } from './MdastCodeVisitor'
-import { coreSystem } from '../core'
+import { Appender, addActivePlugin$, addExportVisitor$, addImportVisitor$, addLexicalNode$, insertDecoratorNode$ } from '../core'
 import { $createCodeBlockNode, CodeBlockNode, CreateCodeBlockNodeOptions } from './CodeBlockNode'
 import { VoidEmitter } from '../../utils/voidEmitter'
+import { Cell, Signal, map, withLatestFrom } from '@mdxeditor/gurx'
+import { realmPlugin } from '@/RealmWithPlugins'
 
 export type { CodeBlockEditorContextValue, CreateCodeBlockNodeOptions } from './CodeBlockNode'
 export { useCodeBlockEditorContext } from './CodeBlockNode'
@@ -57,52 +58,24 @@ export interface CodeBlockEditorDescriptor {
   Editor: React.ComponentType<CodeBlockEditorProps>
 }
 
-/**
- * @internal
- */
-export const codeBlockSystem = system(
-  (r, [{ insertDecoratorNode }]) => {
-    const codeBlockEditorDescriptors = r.node<CodeBlockEditorDescriptor[]>([])
-    const appendCodeBlockEditorDescriptor = r.node<CodeBlockEditorDescriptor>()
-    const insertCodeBlock = r.node<Partial<CreateCodeBlockNodeOptions>>()
-    const defaultCodeBlockLanguage = r.node<string>('')
+export const codeBlockEditorDescriptors$ = Cell<CodeBlockEditorDescriptor[]>([])
+export const defaultCodeBlockLanguage$ = Cell<string>('')
+export const insertCodeBlock$ = Signal<Partial<CreateCodeBlockNodeOptions>>((r) => {
+  r.link(
+    r.pipe(
+      insertCodeBlock$,
+      withLatestFrom(defaultCodeBlockLanguage$),
+      map(
+        ([payload, defaultCodeBlockLanguage]) =>
+          () =>
+            $createCodeBlockNode({ language: defaultCodeBlockLanguage, ...payload })
+      )
+    ),
+    insertDecoratorNode$
+  )
+})
 
-    r.link(
-      r.pipe(
-        insertCodeBlock,
-        r.o.withLatestFrom(defaultCodeBlockLanguage),
-        r.o.map(
-          ([payload, defaultCodeBlockLanguage]) =>
-            () =>
-              $createCodeBlockNode({ language: defaultCodeBlockLanguage, ...payload })
-        )
-      ),
-      insertDecoratorNode
-    )
-
-    r.link(
-      r.pipe(
-        appendCodeBlockEditorDescriptor,
-        r.o.withLatestFrom(codeBlockEditorDescriptors),
-        r.o.map(([newValue, values]) => {
-          if (values.includes(newValue)) {
-            return values
-          }
-          return [...values, newValue]
-        })
-      ),
-      codeBlockEditorDescriptors
-    )
-
-    return {
-      codeBlockEditorDescriptors,
-      defaultCodeBlockLanguage,
-      appendCodeBlockEditorDescriptor,
-      insertCodeBlock
-    }
-  },
-  [coreSystem]
-)
+export const appendCodeBlockEditorDescriptor$ = Appender(codeBlockEditorDescriptors$)
 
 /**
  * The parameters passed to the codeBlockPlugin initializer.
@@ -118,30 +91,18 @@ export interface CodeBlockPluginParams {
   defaultCodeBlockLanguage?: string
 }
 
-export const [
-  /**
-   * @internal
-   */
-  codeBlockPlugin,
-
-  /**
-   * @internal
-   */
-  codeBlockPluginHooks
-] = realmPlugin({
-  id: 'codeblock',
-  systemSpec: codeBlockSystem,
-
-  applyParamsToSystem(realm, params?: CodeBlockPluginParams) {
-    realm.pubKey('defaultCodeBlockLanguage', params?.defaultCodeBlockLanguage || '')
+export const codeBlockPlugin = realmPlugin({
+  update(realm, params?: CodeBlockPluginParams) {
+    realm.pub(defaultCodeBlockLanguage$, params?.defaultCodeBlockLanguage || '')
   },
 
-  init: (realm, params: CodeBlockPluginParams) => {
-    realm.pubKey('codeBlockEditorDescriptors', params?.codeBlockEditorDescriptors || [])
-    // import
-    realm.pubKey('addImportVisitor', MdastCodeVisitor)
-    // export
-    realm.pubKey('addLexicalNode', CodeBlockNode)
-    realm.pubKey('addExportVisitor', CodeBlockVisitor)
+  init(realm, params: CodeBlockPluginParams) {
+    realm.pubIn({
+      [addActivePlugin$]: 'codeblock',
+      [codeBlockEditorDescriptors$]: params?.codeBlockEditorDescriptors || [],
+      [addImportVisitor$]: MdastCodeVisitor,
+      [addLexicalNode$]: CodeBlockNode,
+      [addExportVisitor$]: CodeBlockVisitor
+    })
   }
 })

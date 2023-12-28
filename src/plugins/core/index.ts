@@ -227,7 +227,7 @@ export const iconComponentFor$ = Cell<(name: IconKey) => React.ReactNode>((name:
   throw new Error(`No icon component for ${name}`)
 })
 
-function Appender<T>(cell$: NodeRef<T[]>, init?: (r: Realm, sig$: NodeRef<T | T[]>) => void) {
+export function Appender<T>(cell$: NodeRef<T[]>, init?: (r: Realm, sig$: NodeRef<T | T[]>) => void) {
   return Signal<T | T[]>((r, sig$) => {
     r.changeWith(cell$, sig$, (values, newValue) => {
       if (!Array.isArray(newValue)) {
@@ -508,8 +508,37 @@ export const insertDecoratorNode$ = Signal<() => DecoratorNode<unknown>>((r) => 
 })
 
 export type ViewMode = 'rich-text' | 'source' | 'diff'
-export const viewMode$ = Cell<ViewMode>('rich-text')
-export const markdownSourceEditorValue$ = Cell('')
+
+export const viewMode$ = Cell<ViewMode>('rich-text', (r) => {
+  r.sub(
+    r.pipe(
+      viewMode$,
+      scan(
+        (prev, next) => {
+          return {
+            current: prev.next,
+            next
+          }
+        },
+        { current: 'rich-text' as ViewMode, next: 'rich-text' as ViewMode }
+      ),
+      withLatestFrom(markdownSourceEditorValue$)
+    ),
+    ([{ current }, markdownSourceFromEditor]) => {
+      if (current === 'source' || current === 'diff') {
+        r.pub(setMarkdown$, markdownSourceFromEditor)
+      }
+    }
+  )
+})
+
+export const markdownSourceEditorValue$ = Cell('', (r) => {
+  r.link(markdown$, markdownSourceEditorValue$)
+  r.link(markdownSourceEditorValue$, markdownSignal$)
+})
+
+export const activePlugins$ = Cell<string[]>([])
+export const addActivePlugin$ = Appender(activePlugins$)
 
 interface CorePluginParams {
   initialMarkdown: string

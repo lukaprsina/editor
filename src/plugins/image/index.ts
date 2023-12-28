@@ -1,4 +1,6 @@
+import { realmPlugin } from '@/RealmWithPlugins'
 import { $wrapNodeInElement } from '@lexical/utils'
+import { Cell, Signal, map, mapTo, withLatestFrom } from '@mdxeditor/gurx'
 import {
   $createParagraphNode,
   $createRangeSelection,
@@ -20,13 +22,12 @@ import {
   PASTE_COMMAND,
   createCommand
 } from 'lexical'
-import { realmPlugin, system } from '../../gurx'
-import { coreSystem } from '../core'
+import { CAN_USE_DOM } from '../../utils/detectMac'
+import { addComposerChild$, addExportVisitor$, addImportVisitor$, addLexicalNode$, rootEditor$ } from '../core'
+import { ImageDialog } from './ImageDialog'
 import { $createImageNode, $isImageNode, CreateImageNodeOptions, ImageNode } from './ImageNode'
 import { LexicalImageVisitor } from './LexicalImageVisitor'
 import { MdastHtmlImageVisitor, MdastImageVisitor, MdastJsxImageVisitor } from './MdastImageVisitor'
-import { CAN_USE_DOM } from '../../utils/detectMac'
-import { ImageDialog } from './ImageDialog'
 
 export * from './ImageNode'
 
@@ -54,33 +55,16 @@ type EditingImageDialogState = {
   initialValues: Omit<InsertImageFormValues, 'file'>
 }
 
-/** @internal */
-export const imageSystem = system(
-  (r, [{ rootEditor }]) => {
-    const insertImage = r.node<InsertImageFormValues>()
-    const imageAutocompleteSuggestions = r.node<string[]>([])
-    const disableImageResize = r.node<boolean>(false)
-    const imageUploadHandler = r.node<ImageUploadHandler>(null)
-    const imagePreviewHandler = r.node<ImagePreviewHandler>(null)
-    const imageDialogState = r.node<InactiveImageDialogState | NewImageDialogState | EditingImageDialogState>({ type: 'inactive' })
-    const openNewImageDialog = r.node<true>()
-    const openEditImageDialog = r.node<Omit<EditingImageDialogState, 'type'>>()
-    const closeImageDialog = r.node<true>()
-    const saveImage = r.node<InsertImageFormValues>()
-
-    r.link(r.pipe(closeImageDialog, r.o.mapTo({ type: 'inactive' })), imageDialogState)
-    r.link(r.pipe(openNewImageDialog, r.o.mapTo({ type: 'new' })), imageDialogState)
-
-    r.link(
-      r.pipe(
-        openEditImageDialog,
-        r.o.map((payload) => ({ type: 'editing', ...payload }))
-      ),
-      imageDialogState
-    )
-
+export const insertImage$ = Signal<InsertImageFormValues>()
+export const imageAutocompleteSuggestions$ = Cell<string[]>([])
+export const disableImageResize$ = Cell<boolean>(false)
+export const imageUploadHandler$ = Cell<ImageUploadHandler>(null)
+export const imagePreviewHandler$ = Cell<ImagePreviewHandler>(null)
+export const imageDialogState$ = Cell<InactiveImageDialogState | NewImageDialogState | EditingImageDialogState>(
+  { type: 'inactive' },
+  (r) => {
     r.sub(
-      r.pipe(saveImage, r.o.withLatestFrom(rootEditor, imageUploadHandler, imageDialogState)),
+      r.pipe(saveImage$, withLatestFrom(rootEditor$, imageUploadHandler$, imageDialogState$)),
       ([values, theEditor, imageUploadHandler, dialogState]) => {
         const handler =
           dialogState.type === 'editing'
@@ -93,7 +77,7 @@ export const imageSystem = system(
                   imageNode.setAltText(values.altText)
                   imageNode.setSrc(src)
                 })
-                r.pub(imageDialogState, { type: 'inactive' })
+                r.pub(imageDialogState$, { type: 'inactive' })
               }
             : (src: string) => {
                 theEditor?.update(() => {
@@ -103,7 +87,7 @@ export const imageSystem = system(
                     $wrapNodeInElement(imageNode, $createParagraphNode).selectEnd()
                   }
                 })
-                r.pub(imageDialogState, { type: 'inactive' })
+                r.pub(imageDialogState$, { type: 'inactive' })
               }
 
         if (values.file.length > 0) {
@@ -118,7 +102,7 @@ export const imageSystem = system(
       }
     )
 
-    r.sub(rootEditor, (editor) => {
+    r.sub(rootEditor$, (editor) => {
       editor?.registerCommand<InsertImagePayload>(
         INSERT_IMAGE_COMMAND,
         (payload) => {
@@ -133,7 +117,7 @@ export const imageSystem = system(
         COMMAND_PRIORITY_EDITOR
       )
 
-      const theUploadHandler = r.getValue(imageUploadHandler)
+      const theUploadHandler = r.getValue(imageUploadHandler$)
 
       editor?.registerCommand<DragEvent>(
         DRAGSTART_COMMAND,
@@ -153,7 +137,7 @@ export const imageSystem = system(
       editor?.registerCommand<DragEvent>(
         DROP_COMMAND,
         (event) => {
-          return onDrop(event, editor, r.getValue(imageUploadHandler))
+          return onDrop(event, editor, r.getValue(imageUploadHandler$))
         },
         COMMAND_PRIORITY_HIGH
       )
@@ -172,7 +156,7 @@ export const imageSystem = system(
             return false
           } // If no image was present in the collection, bail.
 
-          const imageUploadHandlerValue = r.getValue(imageUploadHandler)!
+          const imageUploadHandlerValue = r.getValue(imageUploadHandler$)!
 
           Promise.all(cbPayload.map((file) => imageUploadHandlerValue(file.getAsFile()!)))
             .then((urls) => {
@@ -191,22 +175,27 @@ export const imageSystem = system(
         COMMAND_PRIORITY_CRITICAL
       )
     })
-
-    return {
-      imageDialogState,
-      saveImage,
-      openNewImageDialog,
-      openEditImageDialog,
-      closeImageDialog,
-      imageUploadHandler,
-      imageAutocompleteSuggestions,
-      disableImageResize,
-      insertImage,
-      imagePreviewHandler
-    }
-  },
-  [coreSystem]
+  }
 )
+
+export const openNewImageDialog$ = Signal<true>((r) => {
+  r.link(r.pipe(openNewImageDialog$, mapTo({ type: 'new' })), imageDialogState$)
+})
+export const openEditImageDialog$ = Signal<Omit<EditingImageDialogState, 'type'>>((r) => {
+  r.link(
+    r.pipe(
+      openEditImageDialog$,
+      map((payload) => ({ type: 'editing' as const, ...payload }))
+    ),
+    imageDialogState$
+  )
+})
+
+export const closeImageDialog$ = Signal<true>((r) => {
+  r.link(r.pipe(closeImageDialog$, mapTo({ type: 'inactive' })), imageDialogState$)
+})
+
+export const saveImage$ = Signal<InsertImageFormValues>()
 
 interface ImagePluginParams {
   imageUploadHandler?: ImageUploadHandler
@@ -215,29 +204,23 @@ interface ImagePluginParams {
   imagePreviewHandler?: ImagePreviewHandler
 }
 
-export const [
-  /** @internal */
-  imagePlugin,
-  /** @internal */
-  imagePluginHooks
-] = realmPlugin({
-  id: 'image',
-  systemSpec: imageSystem,
-
-  applyParamsToSystem: (realm, params: ImagePluginParams) => {
-    realm.pubKey('imageUploadHandler', params?.imageUploadHandler || null)
-    realm.pubKey('imageAutocompleteSuggestions', params?.imageAutocompleteSuggestions || [])
-    realm.pubKey('disableImageResize', Boolean(params?.disableImageResize))
-    realm.pubKey('imagePreviewHandler', params?.imagePreviewHandler || null)
+export const imagePlugin = realmPlugin<ImagePluginParams>({
+  init(realm) {
+    realm.pubIn({
+      [addImportVisitor$]: [MdastImageVisitor, MdastHtmlImageVisitor, MdastJsxImageVisitor],
+      [addLexicalNode$]: ImageNode,
+      [addExportVisitor$]: LexicalImageVisitor,
+      [addComposerChild$]: ImageDialog
+    })
   },
 
-  init: (realm) => {
-    realm.pubKey('addImportVisitor', MdastImageVisitor)
-    realm.pubKey('addImportVisitor', MdastHtmlImageVisitor)
-    realm.pubKey('addImportVisitor', MdastJsxImageVisitor)
-    realm.pubKey('addLexicalNode', ImageNode)
-    realm.pubKey('addExportVisitor', LexicalImageVisitor)
-    realm.pubKey('addComposerChild', ImageDialog)
+  update(realm, params) {
+    realm.pubIn({
+      [imageUploadHandler$]: params?.imageUploadHandler || null,
+      [imageAutocompleteSuggestions$]: params?.imageAutocompleteSuggestions || [],
+      [disableImageResize$]: Boolean(params?.disableImageResize),
+      [imagePreviewHandler$]: params?.imagePreviewHandler || null
+    })
   }
 })
 

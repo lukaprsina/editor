@@ -2,13 +2,24 @@ import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx'
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx'
 import { mdxjs } from 'micromark-extension-mdxjs'
 import React from 'react'
-import { realmPlugin, system } from '../../gurx'
-import { coreSystem } from '../core'
+import {
+  addExportVisitor$,
+  addImportVisitor$,
+  addLexicalNode$,
+  addMdastExtension$,
+  addSyntaxExtension$,
+  addToMarkdownExtension$,
+  insertDecoratorNode$,
+  jsxComponentDescriptors$,
+  jsxIsAvailable$
+} from '../core'
 import { $createLexicalJsxNode, LexicalJsxNode } from './LexicalJsxNode'
 import { LexicalJsxVisitor } from './LexicalJsxVisitor'
 import { MdastMdxJsEsmVisitor } from './MdastMdxJsEsmVisitor'
 import { MdastMdxJsxElementVisitor } from './MdastMdxJsxElementVisitor'
 import * as Mdast from 'mdast'
+import { Signal, map } from '@mdxeditor/gurx'
+import { realmPlugin } from '@/RealmWithPlugins'
 
 /**
  * @internal
@@ -106,45 +117,35 @@ function toMdastJsxAttributes(attributes: Record<string, string>): MdastJsx['att
   }))
 }
 
-/** @internal */
-export const jsxSystem = system(
-  (r, [{ insertDecoratorNode }]) => {
-    const insertJsx = r.node<InsertJsxPayload>()
+export const insertJsx$ = Signal<InsertJsxPayload>((r) => {
+  r.link(
+    r.pipe(
+      insertJsx$,
+      map(({ kind, name, children, props }) => {
+        return () => {
+          const attributes = toMdastJsxAttributes(props)
 
-    r.link(
-      r.pipe(
-        insertJsx,
-        r.o.map(({ kind, name, children, props }) => {
-          return () => {
-            const attributes = toMdastJsxAttributes(props)
-
-            if (kind === 'flow') {
-              return $createLexicalJsxNode({
-                type: 'mdxJsxFlowElement',
-                name,
-                children: children ?? [],
-                attributes
-              })
-            } else {
-              return $createLexicalJsxNode({
-                type: 'mdxJsxTextElement',
-                name,
-                children: children ?? [],
-                attributes
-              })
-            }
+          if (kind === 'flow') {
+            return $createLexicalJsxNode({
+              type: 'mdxJsxFlowElement',
+              name,
+              children: children ?? [],
+              attributes
+            })
+          } else {
+            return $createLexicalJsxNode({
+              type: 'mdxJsxTextElement',
+              name,
+              children: children ?? [],
+              attributes
+            })
           }
-        })
-      ),
-      insertDecoratorNode
-    )
-
-    return {
-      insertJsx
-    }
-  },
-  [coreSystem]
-)
+        }
+      })
+    ),
+    insertDecoratorNode$
+  )
+})
 
 /**
  * The parameters of the `jsxPlugin`.
@@ -156,30 +157,23 @@ export interface JsxPluginParams {
   jsxComponentDescriptors: JsxComponentDescriptor[]
 }
 
-export const [
-  /** @internal */
-  jsxPlugin,
-  /** @internal */
-  jsxPluginHooks
-] = realmPlugin({
-  id: 'jsx',
-  systemSpec: jsxSystem,
-  applyParamsToSystem: (realm, params: JsxPluginParams) => {
-    realm.pubKey('jsxComponentDescriptors', params?.jsxComponentDescriptors || [])
+export const jsxPlugin = realmPlugin<JsxPluginParams>({
+  init: (realm, _: JsxPluginParams) => {
+    realm.pubIn({
+      // import
+      [jsxIsAvailable$]: true,
+      [addMdastExtension$]: mdxFromMarkdown(),
+      [addSyntaxExtension$]: mdxjs(),
+      [addImportVisitor$]: [MdastMdxJsxElementVisitor, MdastMdxJsEsmVisitor],
+
+      // export
+      [addLexicalNode$]: LexicalJsxNode,
+      [addExportVisitor$]: LexicalJsxVisitor,
+      [addToMarkdownExtension$]: mdxToMarkdown()
+    })
   },
 
-  init: (realm, _: JsxPluginParams) => {
-    realm.pubKey('jsxIsAvailable', true)
-
-    // import
-    realm.pubKey('addMdastExtension', mdxFromMarkdown())
-    realm.pubKey('addSyntaxExtension', mdxjs())
-    realm.pubKey('addImportVisitor', MdastMdxJsxElementVisitor)
-    realm.pubKey('addImportVisitor', MdastMdxJsEsmVisitor)
-
-    // export
-    realm.pubKey('addLexicalNode', LexicalJsxNode)
-    realm.pubKey('addExportVisitor', LexicalJsxVisitor)
-    realm.pubKey('addToMarkdownExtension', mdxToMarkdown())
+  update(realm, params) {
+    realm.pub(jsxComponentDescriptors$, params?.jsxComponentDescriptors || [])
   }
 })

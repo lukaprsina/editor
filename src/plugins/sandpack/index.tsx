@@ -1,9 +1,9 @@
 import { SandpackProvider } from '@codesandbox/sandpack-react'
 import React from 'react'
-import { realmPlugin, system } from '../../gurx'
-import { coreSystem } from '../core'
-import { codeBlockSystem } from '../codeblock'
+import { appendCodeBlockEditorDescriptor$, insertCodeBlock$ } from '../codeblock'
 import { SandpackEditor } from './SandpackEditor'
+import { Cell, Signal, map, useCellValue, withLatestFrom } from '@mdxeditor/gurx'
+import { realmPlugin } from '@/RealmWithPlugins'
 
 type SandpackProviderProps = React.ComponentProps<typeof SandpackProvider>
 
@@ -95,64 +95,40 @@ const defaultSandpackConfig: SandpackConfig = {
   ]
 }
 
-/**
- * @internal
- */
-export const sandpackSystem = system(
-  (r, [, { insertCodeBlock }]) => {
-    const sandpackConfig = r.node<SandpackConfig>(defaultSandpackConfig)
-    const insertSandpack = r.node<string>()
+export const sandpackConfig$ = Cell<SandpackConfig>(defaultSandpackConfig)
+export const insertSandpack$ = Signal<string>((r) => {
+  r.link(
+    r.pipe(
+      insertSandpack$,
+      withLatestFrom(sandpackConfig$),
+      map(([presetName, sandpackConfig]) => {
+        const preset = presetName
+          ? sandpackConfig.presets.find((preset) => preset.name === presetName)
+          : sandpackConfig.presets.find((preset) => preset.name == sandpackConfig.defaultPreset)
+        if (!preset) {
+          throw new Error(`No sandpack preset found with name ${presetName}`)
+        }
 
-    r.link(
-      r.pipe(
-        insertSandpack,
-        r.o.withLatestFrom(sandpackConfig),
-        r.o.map(([presetName, sandpackConfig]) => {
-          const preset = presetName
-            ? sandpackConfig.presets.find((preset) => preset.name === presetName)
-            : sandpackConfig.presets.find((preset) => preset.name == sandpackConfig.defaultPreset)
-          if (!preset) {
-            throw new Error(`No sandpack preset found with name ${presetName}`)
-          }
+        return {
+          code: preset.initialSnippetContent || '',
+          language: preset.snippetLanguage || 'jsx',
+          meta: preset.meta
+        }
+      })
+    ),
+    insertCodeBlock$
+  )
+})
 
-          return {
-            code: preset.initialSnippetContent || '',
-            language: preset.snippetLanguage || 'jsx',
-            meta: preset.meta
-          }
-        })
-      ),
-      insertCodeBlock
-    )
-
-    return {
-      insertSandpack,
-      sandpackConfig
-    }
-  },
-  [coreSystem, codeBlockSystem]
-)
-
-export const [
-  /** @internal */
-  sandpackPlugin,
-  /** @internal */
-  sandpackPluginHooks
-] = realmPlugin({
-  id: 'sandpack',
-  systemSpec: sandpackSystem,
-  applyParamsToSystem(r, params: { sandpackConfig: SandpackConfig }) {
-    r.pubKey('sandpackConfig', params.sandpackConfig)
-  },
-
-  init(r) {
-    r.pubKey('appendCodeBlockEditorDescriptor', {
+export const sandpackPlugin = realmPlugin<{ sandpackConfig: SandpackConfig }>({
+  init(realm) {
+    realm.pub(appendCodeBlockEditorDescriptor$, {
       match(_language, meta) {
         return meta?.startsWith('live')
       },
       priority: 1,
       Editor(props) {
-        const [config] = sandpackPluginHooks.useEmitterValues('sandpackConfig')
+        const config = useCellValue(sandpackConfig$)
 
         const preset = config.presets.find((preset) => preset.meta === props.meta)
         if (!preset) {
@@ -162,5 +138,8 @@ export const [
         return <SandpackEditor {...props} preset={preset} />
       }
     })
+  },
+  update(realm, params) {
+    realm.pub(sandpackConfig$, params.sandpackConfig)
   }
 })

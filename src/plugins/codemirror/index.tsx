@@ -1,58 +1,39 @@
-import { realmPlugin, system } from '../../gurx'
-import { coreSystem } from '../core'
-import { codeBlockSystem } from '../codeblock'
+import { realmPlugin } from '@/RealmWithPlugins'
+import { Cell, Signal, map } from '@mdxeditor/gurx'
+import { appendCodeBlockEditorDescriptor$, insertCodeBlock$ } from '../codeblock'
 import { CodeMirrorEditor } from './CodeMirrorEditor'
 
-const defaultCodeBlockLanguages: Record<string, string> = {
+export const codeBlockLanguages$ = Cell({
   js: 'JavaScript',
   ts: 'TypeScript',
   tsx: 'TypeScript (React)',
   jsx: 'JavaScript (React)',
   css: 'CSS'
-}
+})
 
-/** @internal */
-export const codeMirrorSystem = system(
-  (r, [, { insertCodeBlock }]) => {
-    const codeBlockLanguages = r.node(defaultCodeBlockLanguages)
-    const insertCodeMirror = r.node<{ language: string; code: string }>()
+export const insertCodeMirror$ = Signal<{ language: string; code: string }>((r) => {
+  r.link(
+    r.pipe(
+      insertCodeMirror$,
+      map(({ language, code }) => {
+        return {
+          code: code,
+          language,
+          meta: ''
+        }
+      })
+    ),
+    insertCodeBlock$
+  )
+})
 
-    r.link(
-      r.pipe(
-        insertCodeMirror,
-        r.o.map(({ language, code }) => {
-          return {
-            code: code,
-            language,
-            meta: ''
-          }
-        })
-      ),
-      insertCodeBlock
-    )
-
-    return {
-      codeBlockLanguages,
-      insertCodeMirror
-    }
-  },
-  [coreSystem, codeBlockSystem]
-)
-
-export const [
-  /** @internal */
-  codeMirrorPlugin,
-  /** @internal */
-  codeMirrorHooks
-] = realmPlugin({
-  id: 'codemirror',
-  systemSpec: codeMirrorSystem,
-  applyParamsToSystem(r, params: { codeBlockLanguages: Record<string, string> }) {
-    r.pubKey('codeBlockLanguages', params.codeBlockLanguages)
+export const codeMirrorPlugin = realmPlugin({
+  update(r, params: { codeBlockLanguages: Record<string, string> }) {
+    r.pub(codeBlockLanguages$, params.codeBlockLanguages)
   },
 
   init(r, { codeBlockLanguages }) {
-    r.pubKey('appendCodeBlockEditorDescriptor', {
+    r.pub(appendCodeBlockEditorDescriptor$, {
       match(language, meta) {
         return codeBlockLanguages.hasOwnProperty(language) && meta === ''
       },
