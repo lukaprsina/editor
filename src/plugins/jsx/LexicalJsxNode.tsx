@@ -5,6 +5,8 @@ import React from 'react'
 import { NestedEditorsContext } from '../core/NestedLexicalEditor'
 import { MdastJsx, jsxPluginHooks } from '.'
 import { VoidEmitter, voidEmitter } from '../../utils/voidEmitter'
+import { useCellValue, useCellValues } from '@mdxeditor/gurx'
+import { jsxComponentDescriptors$ } from '../core'
 
 /**
  * A serialized representation of an {@link LexicalJsxNode}.
@@ -102,7 +104,7 @@ export function JsxEditorContainer(props: {
   focusEmitter: VoidEmitter
 }) {
   const { mdastNode } = props
-  const [jsxComponentDescriptors] = jsxPluginHooks.useEmitterValues('jsxComponentDescriptors')
+  const jsxComponentDescriptors = useCellValue(jsxComponentDescriptors$)
   const descriptor = jsxComponentDescriptors.find((descriptor) => descriptor.name === mdastNode.name)
   if (!descriptor) {
     throw new Error(`No JSX descriptor found for ${mdastNode.name}`)

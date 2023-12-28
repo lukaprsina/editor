@@ -3,9 +3,10 @@ import classNames from 'classnames'
 import YamlParser from 'js-yaml'
 import React from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
-import { frontmatterPluginHooks } from '.'
+import { frontmatterDialogOpen$, frontmatterPluginHooks } from '.'
 import styles from '../../styles/ui.module.css'
-import { corePluginHooks } from '../core'
+import { corePluginHooks, editorRootElementRef$, iconComponentFor$, readOnly$ } from '../core'
+import { useCellValues } from '@mdxeditor/gurx'
 
 type YamlConfig = { key: string; value: string }[]
 
@@ -15,12 +16,12 @@ export interface FrontmatterEditorProps {
 }
 
 export const FrontmatterEditor = ({ yaml, onChange }: FrontmatterEditorProps) => {
-  const [readOnly, editorRootElementRef, iconComponentFor] = corePluginHooks.useEmitterValues(
-    'readOnly',
-    'editorRootElementRef',
-    'iconComponentFor'
+  const [readOnly, editorRootElementRef, iconComponentFor, frontmatterDialogOpen] = useCellValues(
+    readOnly$,
+    editorRootElementRef$,
+    iconComponentFor$,
+    frontmatterDialogOpen$
   )
-  const [frontmatterDialogOpen] = frontmatterPluginHooks.useEmitterValues('frontmatterDialogOpen')
   const setFrontmatterDialogOpen = frontmatterPluginHooks.usePublisher('frontmatterDialogOpen')
   const removeFrontmatter = frontmatterPluginHooks.usePublisher('removeFrontmatter')
   const yamlConfig = React.useMemo<YamlConfig>(() => {

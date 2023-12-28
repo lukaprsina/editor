@@ -5,13 +5,14 @@ import * as Popover from '@radix-ui/react-popover'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import React from 'react'
 
-import { corePluginHooks } from '@/plugins/core'
+import { activeEditor$, corePluginHooks, editorRootElementRef$, iconComponentFor$ } from '@/plugins/core'
 import { DownshiftAutoComplete } from '@/plugins/core/ui/DownshiftAutoComplete'
 import styles from '@/styles/ui.module.css'
 import classNames from 'classnames'
 import { createCommand, LexicalCommand } from 'lexical'
 import { useForm } from 'react-hook-form'
-import { linkDialogPluginHooks } from '.'
+import { linkAutocompleteSuggestions$, linkDialogPluginHooks, linkDialogState$ } from '.'
+import { useCellValues } from '@mdxeditor/gurx'
 
 export const OPEN_LINK_DIALOG: LexicalCommand<undefined> = createCommand()
 
@@ -87,15 +88,14 @@ export function LinkEditForm({ url, title, onSubmit, onCancel, linkAutocompleteS
 }
 
 export const LinkDialog: React.FC = () => {
-  const [editorRootElementRef] = corePluginHooks.useEmitterValues('editorRootElementRef')
-  const publishWindowChange = linkDialogPluginHooks.usePublisher('onWindowChange')
-  const [activeEditor] = corePluginHooks.useEmitterValues('activeEditor')
-  const [iconComponentFor] = corePluginHooks.useEmitterValues('iconComponentFor')
-
-  const [linkDialogState, linkAutocompleteSuggestions] = linkDialogPluginHooks.useEmitterValues(
-    'linkDialogState',
-    'linkAutocompleteSuggestions'
+  const [editorRootElementRef, activeEditor, iconComponentFor, linkDialogState, linkAutocompleteSuggestions] = useCellValues(
+    editorRootElementRef$,
+    activeEditor$,
+    iconComponentFor$,
+    linkDialogState$,
+    linkAutocompleteSuggestions$
   )
+  const publishWindowChange = linkDialogPluginHooks.usePublisher('onWindowChange')
   const updateLink = linkDialogPluginHooks.usePublisher('updateLink')
   const cancelLinkEdit = linkDialogPluginHooks.usePublisher('cancelLinkEdit')
   const switchFromPreviewToLinkEdit = linkDialogPluginHooks.usePublisher('switchFromPreviewToLinkEdit')
