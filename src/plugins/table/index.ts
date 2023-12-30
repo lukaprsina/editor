@@ -1,4 +1,4 @@
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 import { Signal, map } from '@mdxeditor/gurx'
 import * as Mdast from 'mdast'
 import { gfmTableFromMarkdown, gfmTableToMarkdown } from 'mdast-util-gfm-table'
@@ -16,7 +16,7 @@ import { LexicalTableVisitor } from './LexicalTableVisitor'
 import { MdastTableVisitor } from './MdastTableVisitor'
 import { $createTableNode, TableNode } from './TableNode'
 
-type InsertTablePayload = {
+export type InsertTablePayload = {
   /**
    * The nunber of rows of the table.
    */

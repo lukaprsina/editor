@@ -2,7 +2,7 @@ import { Extension } from '@codemirror/state'
 import { ViewMode, addEditorWrapper$, viewMode$ } from '../core'
 import { DiffSourceWrapper } from './DiffSourceWrapper'
 import { Cell } from '@mdxeditor/gurx'
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 
 export const diffMarkdown$ = Cell('')
 export const cmExtensions$ = Cell<Extension[]>([])

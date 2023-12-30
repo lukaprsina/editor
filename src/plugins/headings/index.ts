@@ -1,16 +1,22 @@
-import { addActivePlugin$, addExportVisitor$, addImportVisitor$, addLexicalNode$, convertSelectionToNode$ } from '../core'
-import { MdastHeadingVisitor } from './MdastHeadingVisitor'
 import { $createHeadingNode, HeadingNode } from '@lexical/rich-text'
-import { LexicalHeadingVisitor } from './LexicalHeadingVisitor'
-import { KEY_DOWN_COMMAND, COMMAND_PRIORITY_LOW, $createParagraphNode } from 'lexical'
-import { controlOrMeta } from '../../utils/detectMac'
 import { Cell } from '@mdxeditor/gurx'
-import { createRootEditorSubscription$ } from '@/plugins/core'
-import { realmPlugin } from '@/RealmWithPlugins'
+import { $createParagraphNode, COMMAND_PRIORITY_LOW, KEY_DOWN_COMMAND } from 'lexical'
+import { realmPlugin } from '../../RealmWithPlugins'
+import { controlOrMeta } from '../../utils/detectMac'
+import {
+  addActivePlugin$,
+  addExportVisitor$,
+  addImportVisitor$,
+  addLexicalNode$,
+  convertSelectionToNode$,
+  createRootEditorSubscription$
+} from '../core'
+import { LexicalHeadingVisitor } from './LexicalHeadingVisitor'
+import { MdastHeadingVisitor } from './MdastHeadingVisitor'
 
 const FORMATTING_KEYS = [48, 49, 50, 51, 52, 53, 54]
 
-const ALL_HEADING_LEVELS = [1, 2, 3, 4, 5, 6] as const
+export const ALL_HEADING_LEVELS = [1, 2, 3, 4, 5, 6] as const
 export type HEADING_LEVEL = (typeof ALL_HEADING_LEVELS)[number]
 
 const CODE_TO_HEADING_LEVEL_MAP: Record<string, HEADING_LEVEL> = {
@@ -54,7 +60,7 @@ export const allowedHeadingLevels$ = Cell<ReadonlyArray<HEADING_LEVEL>>(ALL_HEAD
 /**
  * The parameters of the `headingsPlugin`.
  */
-interface HeadingsPluginParams {
+export interface HeadingsPluginParams {
   /**
    * Allows you to limit the headings used in the editor. Affects the block type dropdown and the keyboard shortcuts.
    * @default [1, 2, 3, 4, 5, 6]

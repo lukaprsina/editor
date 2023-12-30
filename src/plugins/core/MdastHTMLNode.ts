@@ -1,11 +1,11 @@
 import * as Mdast from 'mdast'
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx'
 
-interface MdastBlockHTMLNode extends MdxJsxFlowElement {
+export interface MdastBlockHTMLNode extends MdxJsxFlowElement {
   name: (typeof htmlTags)[number]
 }
 
-interface MdastInlineHTMLNode extends MdxJsxTextElement {
+export interface MdastInlineHTMLNode extends MdxJsxTextElement {
   name: (typeof htmlTags)[number]
 }
 

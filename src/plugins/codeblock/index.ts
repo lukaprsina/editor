@@ -4,7 +4,8 @@ import { Appender, addActivePlugin$, addExportVisitor$, addImportVisitor$, addLe
 import { $createCodeBlockNode, CodeBlockNode, CreateCodeBlockNodeOptions } from './CodeBlockNode'
 import { VoidEmitter } from '../../utils/voidEmitter'
 import { Cell, Signal, map, withLatestFrom } from '@mdxeditor/gurx'
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
+export * from './CodeBlockNode'
 
 export type { CodeBlockEditorContextValue, CreateCodeBlockNodeOptions } from './CodeBlockNode'
 export { useCodeBlockEditorContext } from './CodeBlockNode'

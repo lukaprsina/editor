@@ -1,4 +1,4 @@
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 import { $wrapNodeInElement } from '@lexical/utils'
 import { Cell, Signal, map, mapTo, withLatestFrom } from '@mdxeditor/gurx'
 import {
@@ -41,15 +41,15 @@ export interface InsertImageFormValues {
   file: FileList
 }
 
-type InactiveImageDialogState = {
+export type InactiveImageDialogState = {
   type: 'inactive'
 }
 
-type NewImageDialogState = {
+export type NewImageDialogState = {
   type: 'new'
 }
 
-type EditingImageDialogState = {
+export type EditingImageDialogState = {
   type: 'editing'
   nodeKey: string
   initialValues: Omit<InsertImageFormValues, 'file'>
@@ -197,7 +197,7 @@ export const closeImageDialog$ = Signal<true>((r) => {
 
 export const saveImage$ = Signal<InsertImageFormValues>()
 
-interface ImagePluginParams {
+export interface ImagePluginParams {
   imageUploadHandler?: ImageUploadHandler
   imageAutocompleteSuggestions?: string[]
   disableImageResize?: boolean

@@ -3,7 +3,7 @@ import { ButtonOrDropdownButton } from '.././primitives/toolbar'
 import { insertDirective$ } from '../../directives'
 import { ADMONITION_TYPES } from '../../../directive-editors/AdmonitionDirectiveDescriptor'
 import { useCellValue, usePublisher } from '@mdxeditor/gurx'
-import { iconComponentFor$ } from '@/plugins/core'
+import { iconComponentFor$ } from '../../core'
 
 /**
  * A toolbar dropdown button that allows the user to insert admonitions.

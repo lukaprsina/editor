@@ -4,7 +4,7 @@ import { hasFrontmatter$, insertFrontmatter$ } from '../../frontmatter'
 import styles from '../../../styles/ui.module.css'
 import classNames from 'classnames'
 import { useCellValues, usePublisher } from '@mdxeditor/gurx'
-import { iconComponentFor$ } from '@/plugins/core'
+import { iconComponentFor$ } from '../../core'
 
 /**
  * A toolbar button that allows the user to insert a {@link https://jekyllrb.com/docs/front-matter/ | front-matter} editor (if one is not already present).

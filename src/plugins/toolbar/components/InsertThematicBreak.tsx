@@ -2,7 +2,7 @@ import React from 'react'
 import { insertThematicBreak$ } from '../../thematic-break'
 import { ButtonWithTooltip } from '.././primitives/toolbar'
 import { useCellValue, usePublisher } from '@mdxeditor/gurx'
-import { iconComponentFor$ } from '@/plugins/core'
+import { iconComponentFor$ } from '../../core'
 
 /**
  * A toolbar button that allows the user to insert a thematic break (rendered as an HR HTML element).

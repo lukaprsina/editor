@@ -1,4 +1,4 @@
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 import { Cell, useCellValues } from '@mdxeditor/gurx'
 import React from 'react'
 import { addTopAreaChild$, readOnly$ } from '../core'

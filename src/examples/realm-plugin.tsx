@@ -1,5 +1,5 @@
 import React from 'react'
-import { RealmWithPlugins, realmPlugin } from '@/RealmWithPlugins'
+import { RealmWithPlugins, realmPlugin } from '../RealmWithPlugins'
 import { Cell, useCellValue } from '@mdxeditor/gurx'
 
 const cell$ = Cell('foo', (r) => {

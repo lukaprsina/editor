@@ -69,9 +69,9 @@ The `realmPlugin` call returns the plugin itself and a set of React hooks (by co
 ```tsx
 export const DiffSourceToggleWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // access the viewMode node value 
-  const viewMode = useCellValue(viewMode$)
+  const [viewMode] = diffSourcePluginHooks.useEmitterValues('viewMode')
   // a function that will publish a new value into the viewMode node
-  const changeViewMode = usePublisher(viewMode$)
+  const changeViewMode = diffSourcePluginHooks.usePublisher('viewMode')
 
   return (
     <>
@@ -101,7 +101,7 @@ export const DiffSourceToggleWrapper: React.FC<{ children: React.ReactNode }> = 
 
 ```
 
-In addition to `useCellValues` and `usePublisher`, you can also use the `useEmitter` hook that will execute the provided callback when node changes without causing a re-render. 
+In addition to `useEmitterValues` and `usePublisher`, you can also use the `useEmitter` hook that will execute the provided callback when node changes without causing a re-render. 
 While using strings for the nodes, the hooks have strict TypeScript typings, so you should be able to get autocompletion of the nodes you can access.
 
 ## Markdown / Editor state conversion

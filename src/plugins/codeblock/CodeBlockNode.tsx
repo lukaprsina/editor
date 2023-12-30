@@ -7,6 +7,7 @@ import { useCellValue } from '@mdxeditor/gurx'
 
 /**
  * The options necessary to construct a new code block node.
+ * @group Code Block
  */
 export interface CreateCodeBlockNodeOptions {
   /**
@@ -25,10 +26,13 @@ export interface CreateCodeBlockNodeOptions {
 
 /**
  * A serialized representation of an {@link CodeBlockNode}.
+ * @group Code Block
  */
 export type SerializedCodeBlockNode = Spread<CreateCodeBlockNodeOptions & { type: 'codeblock'; version: 1 }, SerializedLexicalNode>
+
 /**
  * A lexical node that represents a fenced code block. Use {@link "$createCodeBlockNode"} to construct one.
+ * @group Code Block
  */
 export class CodeBlockNode extends DecoratorNode<JSX.Element> {
   __code: string
@@ -132,7 +136,7 @@ export class CodeBlockNode extends DecoratorNode<JSX.Element> {
   }
 }
 
-interface CodeBlockEditorContainerProps extends CodeBlockEditorProps {
+export interface CodeBlockEditorContainerProps extends CodeBlockEditorProps {
   /** The Lexical editor that contains the node */
   parentEditor: LexicalEditor
   /** The Lexical node that is being edited */

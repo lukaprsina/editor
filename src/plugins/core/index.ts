@@ -1,4 +1,4 @@
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 import { InitialEditorStateType } from '@lexical/react/LexicalComposer.js'
 import { createEmptyHistoryState } from '@lexical/react/LexicalHistoryPlugin.js'
 import { $isHeadingNode, HeadingTagType } from '@lexical/rich-text'
@@ -61,8 +61,9 @@ import { MdastParagraphVisitor } from './MdastParagraphVisitor'
 import { MdastRootVisitor } from './MdastRootVisitor'
 import { MdastTextVisitor } from './MdastTextVisitor'
 import { SharedHistoryPlugin } from './SharedHistoryPlugin'
-
+export * from './MdastHTMLNode'
 export * from './GenericHTMLNode'
+export * from './Icon'
 
 /** @internal */
 export type EditorSubscription = (activeEditor: LexicalEditor) => () => void
@@ -540,7 +541,7 @@ export const markdownSourceEditorValue$ = Cell('', (r) => {
 export const activePlugins$ = Cell<string[]>([])
 export const addActivePlugin$ = Appender(activePlugins$)
 
-interface CorePluginParams {
+export interface CorePluginParams {
   initialMarkdown: string
   contentEditableClassName: string
   placeholder?: React.ReactNode

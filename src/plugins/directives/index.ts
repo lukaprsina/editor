@@ -1,4 +1,4 @@
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 import {
   addExportVisitor$,
   addImportVisitor$,
@@ -7,7 +7,7 @@ import {
   addSyntaxExtension$,
   addToMarkdownExtension$,
   insertDecoratorNode$
-} from '@/plugins/core'
+} from '../core'
 import { Cell, Signal, map } from '@mdxeditor/gurx'
 import { LexicalEditor } from 'lexical'
 import { Directive, directiveFromMarkdown, directiveToMarkdown } from 'mdast-util-directive'
@@ -15,6 +15,7 @@ import { directive } from 'micromark-extension-directive'
 import { $createDirectiveNode, DirectiveNode } from './DirectiveNode'
 import { DirectiveVisitor } from './DirectiveVisitor'
 import { MdastDirectiveVisitor } from './MdastDirectiveVisitor'
+export * from './DirectiveNode'
 
 /**
  * Implement this interface to create a custom editor for markdown directives.
@@ -70,7 +71,7 @@ export interface DirectiveEditorProps<T extends Directive = Directive> {
   descriptor: DirectiveDescriptor
 }
 
-interface InsertDirectivePayload {
+export interface InsertDirectivePayload {
   type: Directive['type']
   name: string
   attributes?: Directive['attributes']

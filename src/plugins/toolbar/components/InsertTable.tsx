@@ -2,7 +2,7 @@ import { ButtonWithTooltip } from '.././primitives/toolbar'
 import React from 'react'
 import { insertTable$ } from '../../table'
 import { useCellValue, usePublisher } from '@mdxeditor/gurx'
-import { iconComponentFor$ } from '@/plugins/core'
+import { iconComponentFor$ } from '../../core'
 
 /**
  * A toolbar button that allows the user to insert a table.

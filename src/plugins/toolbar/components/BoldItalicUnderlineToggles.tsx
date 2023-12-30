@@ -1,4 +1,4 @@
-import { applyFormat$, currentFormat$, iconComponentFor$ } from '@/plugins/core'
+import { applyFormat$, currentFormat$, iconComponentFor$ } from '../../core'
 import { useCellValues, usePublisher } from '@mdxeditor/gurx'
 import React from 'react'
 import { IS_BOLD, IS_ITALIC, IS_UNDERLINE } from '../../../FormatConstants'

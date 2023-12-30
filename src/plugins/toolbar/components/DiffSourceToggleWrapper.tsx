@@ -1,4 +1,4 @@
-import { iconComponentFor$, viewMode$ } from '@/plugins/core'
+import { iconComponentFor$, viewMode$ } from '../../core'
 import { useCellValues, usePublisher } from '@mdxeditor/gurx'
 import React from 'react'
 import styles from '../../../styles/ui.module.css'

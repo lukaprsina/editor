@@ -2,7 +2,7 @@ import React from 'react'
 import { ButtonWithTooltip } from '.././primitives/toolbar'
 import { openLinkEditDialog$ } from '../../link-dialog'
 import { useCellValue, usePublisher } from '@mdxeditor/gurx'
-import { iconComponentFor$ } from '@/plugins/core'
+import { iconComponentFor$ } from '../../core'
 
 /**
  * A toolbar component that opens the link edit dialog.

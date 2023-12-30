@@ -15,17 +15,17 @@ import { getSelectedNode, getSelectionRectangle } from '../../utils/lexicalHelpe
 import { activeEditor$, addComposerChild$, createActiveEditorSubscription$, currentSelection$ } from '../core'
 import { LinkDialog } from './LinkDialog'
 import { Action, Cell, Signal, filter, map, withLatestFrom } from '@mdxeditor/gurx'
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 
-type RectData = Pick<DOMRect, 'height' | 'width' | 'top' | 'left'>
+export type RectData = Pick<DOMRect, 'height' | 'width' | 'top' | 'left'>
 
-type InactiveLinkDialog = {
+export type InactiveLinkDialog = {
   type: 'inactive'
   rectangle?: undefined
   linkNodeKey?: undefined
 }
 
-type PreviewLinkDialog = {
+export type PreviewLinkDialog = {
   type: 'preview'
   title: string
   url: string
@@ -33,7 +33,7 @@ type PreviewLinkDialog = {
   rectangle: RectData
 }
 
-type EditLinkDialog = {
+export type EditLinkDialog = {
   type: 'edit'
   initialUrl: string
   initialTitle?: string
@@ -43,7 +43,7 @@ type EditLinkDialog = {
   rectangle: RectData
 }
 
-type LinkDialogPluginParamsType = {
+export type LinkDialogPluginParamsType = {
   LinkDialog?: () => JSX.Element
   linkAutocompleteSuggestions?: string[]
 }

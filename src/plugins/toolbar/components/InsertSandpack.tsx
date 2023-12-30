@@ -2,7 +2,7 @@ import React from 'react'
 import { ButtonOrDropdownButton } from '.././primitives/toolbar'
 import { insertSandpack$, sandpackConfig$ } from '../../sandpack'
 import { useCellValues, usePublisher } from '@mdxeditor/gurx'
-import { iconComponentFor$ } from '@/plugins/core'
+import { iconComponentFor$ } from '../../core'
 
 /**
  * A dropdown button that allows the user to insert a live code block into the editor. The dropdown offers a list of presets that are defined in the sandpack plugin config.

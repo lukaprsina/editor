@@ -1,4 +1,4 @@
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 import {
   addExportVisitor$,
   addImportVisitor$,
@@ -8,7 +8,7 @@ import {
   addToMarkdownExtension$,
   createRootEditorSubscription$,
   rootEditor$
-} from '@/plugins/core'
+} from '../core'
 import { Cell, Signal, withLatestFrom } from '@mdxeditor/gurx'
 import { $getRoot } from 'lexical'
 import { frontmatterFromMarkdown, frontmatterToMarkdown } from 'mdast-util-frontmatter'

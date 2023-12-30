@@ -14,7 +14,7 @@ import { MDX_NODE_TYPES, htmlTags } from './MdastHTMLNode'
 
 export type KnownHTMLTagType = (typeof htmlTags)[number]
 
-const TYPE_NAME = 'generic-html' as const
+export const TYPE_NAME = 'generic-html' as const
 
 export type SerializedGenericHTMLNode = Spread<
   {
@@ -27,7 +27,7 @@ export type SerializedGenericHTMLNode = Spread<
   SerializedElementNode
 >
 
-type MdxNodeType = (typeof MDX_NODE_TYPES)[number]
+export type MdxNodeType = (typeof MDX_NODE_TYPES)[number]
 
 export class GenericHTMLNode extends ElementNode {
   /** @internal */

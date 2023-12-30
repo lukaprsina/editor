@@ -3,7 +3,7 @@ import React from 'react'
 import { appendCodeBlockEditorDescriptor$, insertCodeBlock$ } from '../codeblock'
 import { SandpackEditor } from './SandpackEditor'
 import { Cell, Signal, map, useCellValue, withLatestFrom } from '@mdxeditor/gurx'
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 
 type SandpackProviderProps = React.ComponentProps<typeof SandpackProvider>
 

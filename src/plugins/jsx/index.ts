@@ -19,7 +19,7 @@ import { MdastMdxJsEsmVisitor } from './MdastMdxJsEsmVisitor'
 import { MdastMdxJsxElementVisitor } from './MdastMdxJsxElementVisitor'
 import * as Mdast from 'mdast'
 import { Signal, map } from '@mdxeditor/gurx'
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 
 /**
  * @internal
@@ -89,21 +89,21 @@ export interface JsxEditorProps {
   descriptor: JsxComponentDescriptor
 }
 
-type JsxTextPayload = {
+export type JsxTextPayload = {
   kind: 'text'
   name: string
   props: Record<string, string>
   children?: MdxJsxTextElement['children']
 }
 
-type JsxFlowPayload = {
+export type JsxFlowPayload = {
   kind: 'flow'
   name: string
   props: Record<string, string>
   children?: MdxJsxFlowElement['children']
 }
 
-type InsertJsxPayload = JsxTextPayload | JsxFlowPayload
+export type InsertJsxPayload = JsxTextPayload | JsxFlowPayload
 
 export function isMdastJsxNode(node: Mdast.Content | Mdast.Parent | Mdast.Root): node is MdastJsx {
   return node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement'

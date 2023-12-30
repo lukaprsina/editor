@@ -2,7 +2,7 @@ import React from 'react'
 import { applyListType$, currentListType$ } from '../../lists'
 import { SingleChoiceToggleGroup } from '.././primitives/toolbar'
 import { useCellValues, usePublisher } from '@mdxeditor/gurx'
-import { iconComponentFor$ } from '@/plugins/core'
+import { iconComponentFor$ } from '../../core'
 
 /**
  * A toolbar toggle that allows the user to toggle between bulleted and numbered lists.

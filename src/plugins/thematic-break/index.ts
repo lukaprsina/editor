@@ -1,4 +1,4 @@
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 import { HorizontalRuleNode, INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/react/LexicalHorizontalRuleNode.js'
 import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin.js'
 import { Action, withLatestFrom } from '@mdxeditor/gurx'

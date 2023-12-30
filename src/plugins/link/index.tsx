@@ -5,14 +5,15 @@ import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { LinkPlugin as LexicalLinkPlugin } from '@lexical/react/LexicalLinkPlugin.js'
 import { LexicalAutoLinkPlugin } from './AutoLinkPlugin'
 import { Cell } from '@mdxeditor/gurx'
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 import { addImportVisitor$, addLexicalNode$, addExportVisitor$, addComposerChild$, addActivePlugin$ } from '../core'
 
 export const disableAutoLink$ = Cell(false)
+
 /**
  * The parameters used to configure the link plugin
  */
-interface LinkPluginParams {
+export interface LinkPluginParams {
   /**
    * An optional function to validate the URL of a link.
    * By default, no validation is performed.

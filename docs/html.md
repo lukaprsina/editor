@@ -16,7 +16,7 @@ Out of the box, the editor does not include UI that allows the user to add, remo
 
 ```tsx
 const HTMLToolbarComponent = () => {
-  const [currentSelection, activeEditor] = useCellValues(currentSelection$, activeEditor$)
+  const [currentSelection, activeEditor] = corePluginHooks.useEmitterValues('currentSelection', 'activeEditor')
 
   const currentHTMLNode = React.useMemo(() => {
     return (

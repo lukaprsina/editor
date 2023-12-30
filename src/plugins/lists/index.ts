@@ -37,7 +37,7 @@ import { $findMatchingParent, $getNearestNodeOfType } from '@lexical/utils'
 import { gfmTaskListItem } from 'micromark-extension-gfm-task-list-item'
 import { gfmTaskListItemFromMarkdown, gfmTaskListItemToMarkdown } from 'mdast-util-gfm-task-list-item'
 import { Cell, Signal, withLatestFrom } from '@mdxeditor/gurx'
-import { realmPlugin } from '@/RealmWithPlugins'
+import { realmPlugin } from '../../RealmWithPlugins'
 
 const ListTypeCommandMap = new Map<ListType | '', LexicalCommand<void>>([
   ['number', INSERT_ORDERED_LIST_COMMAND],
