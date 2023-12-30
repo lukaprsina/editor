@@ -15,17 +15,7 @@ import {
 import { LexicalTableVisitor } from './LexicalTableVisitor'
 import { MdastTableVisitor } from './MdastTableVisitor'
 import { $createTableNode, TableNode } from './TableNode'
-
-export type InsertTablePayload = {
-  /**
-   * The nunber of rows of the table.
-   */
-  rows?: number
-  /**
-   * The nunber of columns of the table.
-   */
-  columns?: number
-}
+export * from './TableNode'
 
 function seedTable(rows: number = 1, columns: number = 1): Mdast.Table {
   const table: Mdast.Table = {
@@ -53,7 +43,27 @@ function seedTable(rows: number = 1, columns: number = 1): Mdast.Table {
   return table
 }
 
-export const insertTable$ = Signal<InsertTablePayload>((r) => {
+/**
+ * A signal that will insert a table with the published amount of rows and columns into the active editor.
+ * @example
+ * ```tsx
+ * const insertTable = usePublisher(insertTable$)
+ * // ...
+ * insertTable({ rows: 3, columns: 4 })
+ * ```
+ *
+ * @group Table
+ */
+export const insertTable$ = Signal<{
+  /**
+   * The nunber of rows of the table.
+   */
+  rows?: number
+  /**
+   * The nunber of columns of the table.
+   */
+  columns?: number
+}>((r) => {
   r.link(
     r.pipe(
       insertTable$,

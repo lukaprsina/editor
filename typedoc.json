@@ -4,11 +4,11 @@
     "./src/index.ts",
   ],
   "out": "docs/api",
-  "plugin": [
-    "typedoc-plugin-markdown"
-  ],
+  "plugin": [],
+  "watch": true,
   "excludeExternals": true,
   "excludePrivate": true,
+  "excludeInternal": true,
   "readme": "none",
   "categorizeByGroup": true,
   "disableSources": true,
