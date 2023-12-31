@@ -1,8 +1,3 @@
-/** @internal */
-export interface Proc {
-  (): unknown
-}
-
 /**
  * Performs left to right composition of two functions.
  * @group Utils
@@ -56,7 +51,7 @@ export function tap<T>(arg: T, proc: (arg: T) => unknown): T {
  * Calls the passed function.
  * @group Utils
  */
-export function call(proc: Proc) {
+export function call(proc: () => unknown) {
   proc()
 }
 
@@ -73,7 +68,7 @@ export function always<T>(value: T) {
  * joinProc does not pass arguments or collect return values.
  * @group Utils
  */
-export function joinProc(...procs: Proc[]) {
+export function joinProc(...procs: Array<() => unknown>) {
   return () => {
     procs.map(call)
   }

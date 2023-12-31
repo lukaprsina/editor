@@ -81,8 +81,7 @@ export interface LexicalExportVisitor<LN extends LexicalNode, UN extends Mdast.C
 }
 
 /**
- * The "any" type for LexicalExportVisitor.
- * @internal
+ * A generic visitor that can be used to process any lexical node.
  */
 export type LexicalVisitor = LexicalExportVisitor<LexicalNode, Mdast.Content>
 

@@ -65,11 +65,17 @@ export * from './MdastHTMLNode'
 export * from './GenericHTMLNode'
 export * from './Icon'
 
-/** @internal */
+/**
+ * A function that subscribes to Lexical editor updates or events, and retursns an unsubscribe function.
+ * @group Core
+ */
 export type EditorSubscription = (activeEditor: LexicalEditor) => () => void
 type Teardowns = (() => void)[]
 
-/** @internal */
+/**
+ * The type of the block that the current selection is in.
+ * @group Core
+ */
 export type BlockType = 'paragraph' | 'quote' | HeadingTagType | ''
 
 /**

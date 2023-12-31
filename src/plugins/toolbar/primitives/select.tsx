@@ -78,7 +78,6 @@ export const SelectButtonTrigger: React.FC<{ children: React.ReactNode; title: s
 
 /**
  * A toolbar primitive you can use to build dropdowns, such as the block type select.
- * See {@link SelectProps} for more details.
  * @group Toolbar Primitives
  */
 export const Select = <T extends string>(props: {

@@ -4,8 +4,10 @@
     "./src/index.ts",
   ],
   "out": "docs/api",
-  "plugin": [],
-  "watch": true,
+  "plugin": [
+    "typedoc-plugin-markdown"
+  ],
+  "watch": false,
   "excludeExternals": true,
   "excludePrivate": true,
   "excludeInternal": true,

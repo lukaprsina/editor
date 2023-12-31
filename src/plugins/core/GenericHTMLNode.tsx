@@ -28,7 +28,7 @@ export const TYPE_NAME = 'generic-html' as const
 export type SerializedGenericHTMLNode = Spread<
   {
     tag: KnownHTMLTagType
-    type: typeof TYPE_NAME
+    type: 'generic-html'
     mdxType: MdxNodeType
     attributes: MdxJsxAttribute[]
     version: 1

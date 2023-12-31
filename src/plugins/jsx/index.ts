@@ -22,7 +22,8 @@ import { Signal, map } from '@mdxeditor/gurx'
 import { realmPlugin } from '../../RealmWithPlugins'
 
 /**
- * @internal
+ * An MDX JSX MDAST node.
+ * @group JSX
  */
 export type MdastJsx = MdxJsxTextElement | MdxJsxFlowElement
 

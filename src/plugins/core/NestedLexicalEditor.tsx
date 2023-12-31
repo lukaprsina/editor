@@ -133,7 +133,7 @@ export function useLexicalNodeRemove() {
 }
 
 /**
- * A nested editor React component that allows editing of the contents of complex markdown nodes that have nested markdown content (for example, custom directives or JSX elements). See the {@link NestedEditorProps} for more details on the compoment props.
+ * A nested editor React component that allows editing of the contents of complex markdown nodes that have nested markdown content (for example, custom directives or JSX elements).
  *
  * @example
  * You can use a type param to specify the type of the mdast node
