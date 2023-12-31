@@ -75,6 +75,10 @@ export const insertTable$ = Signal<{
   )
 })
 
+/**
+ * A plugin that adds support for tables to the editor.
+ * @group Table
+ */
 export const tablePlugin = realmPlugin({
   init(realm) {
     realm.pubIn({

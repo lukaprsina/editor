@@ -12,6 +12,7 @@ export { useCodeBlockEditorContext } from './CodeBlockNode'
 
 /**
  * The properties passed to the {@link CodeBlockEditorDescriptor.Editor} component.
+ * @group Code Block
  */
 export interface CodeBlockEditorProps {
   /**
@@ -39,7 +40,8 @@ export interface CodeBlockEditorProps {
 
 /**
  * Implement this interface to create a custom code block editor.
- * Pass the object in the codeBlockPlugin parameters.
+ * Pass the object in the {@link codeBlockPlugin} parameters.
+ * @group Code Block
  */
 export interface CodeBlockEditorDescriptor {
   /**
@@ -59,8 +61,22 @@ export interface CodeBlockEditorDescriptor {
   Editor: React.ComponentType<CodeBlockEditorProps>
 }
 
+/**
+ * Contains the currently registered code block descriptors.
+ * @group Code Block
+ */
 export const codeBlockEditorDescriptors$ = Cell<CodeBlockEditorDescriptor[]>([])
+
+/**
+ * Contains the default language to use when creating a new code block if no language is passed.
+ * @group Code Block
+ */
 export const defaultCodeBlockLanguage$ = Cell<string>('')
+
+/**
+ * A signal that inserts a new code block into the editor with the published options.
+ * @group Code Block
+ */
 export const insertCodeBlock$ = Signal<Partial<CreateCodeBlockNodeOptions>>((r) => {
   r.link(
     r.pipe(
@@ -76,23 +92,26 @@ export const insertCodeBlock$ = Signal<Partial<CreateCodeBlockNodeOptions>>((r) 
   )
 })
 
+/**
+ * A signal that appends a code block editor descriptor to the list of descriptors.
+ * @group Code Block
+ */
 export const appendCodeBlockEditorDescriptor$ = Appender(codeBlockEditorDescriptors$)
 
 /**
- * The parameters passed to the codeBlockPlugin initializer.
+ * A plugin that adds support for code blocks and custom code block editors.
+ * @group Code Block
  */
-export interface CodeBlockPluginParams {
+export const codeBlockPlugin = realmPlugin<{
   /**
-   * Use this to register custom code block editors.
+   * Pass an array of {@link CodeBlockEditorDescriptor} to register custom code block editors.
    */
   codeBlockEditorDescriptors?: CodeBlockEditorDescriptor[]
   /**
    * The default language to use when creating a new code block if no language is passed.
    */
   defaultCodeBlockLanguage?: string
-}
-
-export const codeBlockPlugin = realmPlugin<CodeBlockPluginParams>({
+}>({
   update(realm, params) {
     realm.pub(defaultCodeBlockLanguage$, params?.defaultCodeBlockLanguage || '')
   },

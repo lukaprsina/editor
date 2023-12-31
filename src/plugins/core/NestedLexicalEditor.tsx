@@ -44,6 +44,7 @@ import { useCellValues, usePublisher } from '@mdxeditor/gurx'
 
 /**
  * The value of the {@link NestedEditorsContext} React context.
+ * @group Custom Editor Primitives
  */
 export interface NestedEditorsContextValue<T extends Node> {
   /**
@@ -76,11 +77,13 @@ export interface NestedEditorsContextValue<T extends Node> {
 /**
  * Use this context to provide the necessary values to the {@link NestedLexicalEditor} React component.
  * Place it as a wrapper in your custom lexical node decorators.
+ * @group Custom Editor Primitives
  */
 export const NestedEditorsContext = React.createContext<NestedEditorsContextValue<Node> | undefined>(undefined)
 
 /**
  * A hook to get the current {@link NestedEditorsContext} value. Use this in your custom editor components.
+ * @group Custom Editor Primitives
  */
 export function useNestedEditorContext<T extends Mdast.Content>() {
   const context = React.useContext(NestedEditorsContext) as NestedEditorsContextValue<T> | undefined
@@ -92,6 +95,7 @@ export function useNestedEditorContext<T extends Mdast.Content>() {
 
 /**
  * A hook that returns a function that can be used to update the mdast node. Use this in your custom editor components.
+ * @group Custom Editor Primitives
  */
 export function useMdastNodeUpdater<T extends Mdast.Content>() {
   const { parentEditor, mdastNode, lexicalNode } = useNestedEditorContext<T>()
@@ -114,6 +118,7 @@ export function useMdastNodeUpdater<T extends Mdast.Content>() {
 
 /**
  * A hook that returns a function that removes the lexical node from the editor.
+ * @group Custom Editor Primitives
  */
 export function useLexicalNodeRemove() {
   const { parentEditor, lexicalNode } = useNestedEditorContext()
@@ -128,10 +133,23 @@ export function useLexicalNodeRemove() {
 }
 
 /**
- * The properties of the {@link NestedLexicalEditor} React component.
- * @typeParam T - The type of the mdast node of the editor.
+ * A nested editor React component that allows editing of the contents of complex markdown nodes that have nested markdown content (for example, custom directives or JSX elements). See the {@link NestedEditorProps} for more details on the compoment props.
+ *
+ * @example
+ * You can use a type param to specify the type of the mdast node
+ *
+ * ```tsx
+ *
+ * interface CalloutDirectiveNode extends LeafDirective {
+ *   name: 'callout'
+ *   children: Mdast.PhrasingContent[]
+ * }
+ *
+ * return <NestedLexicalEditor<CalloutDirectiveNode> getContent={node => node.children} getUpdatedMdastNode={(node, children) => ({ ...node, children })} />
+ * ```
+ * @group Custom Editor Primitives
  */
-export interface NestedEditorProps<T extends Mdast.Content> {
+export const NestedLexicalEditor = function <T extends Mdast.Content>(props: {
   /**
    * A function that returns the phrasing content of the mdast node. In most cases, this will be the `children` property of the mdast node, but you can also have multiple nested nodes with their own children.
    */
@@ -151,25 +169,7 @@ export interface NestedEditorProps<T extends Mdast.Content> {
    * Whether or not the editor edits blocks (multiple paragraphs)
    */
   block?: boolean
-}
-
-/**
- * A nested editor React component that allows editing of the contents of complex markdown nodes that have nested markdown content (for example, custom directives or JSX elements). See the {@link NestedEditorProps} for more details on the compoment props.
- *
- * @example
- * You can use a type param to specify the type of the mdast node
- *
- * ```tsx
- *
- * interface CalloutDirectiveNode extends LeafDirective {
- *   name: 'callout'
- *   children: Mdast.PhrasingContent[]
- * }
- *
- * return <NestedLexicalEditor<CalloutDirectiveNode> getContent={node => node.children} getUpdatedMdastNode={(node, children) => ({ ...node, children })} />
- * ```
- */
-export const NestedLexicalEditor = function <T extends Mdast.Content>(props: NestedEditorProps<T>) {
+}) {
   const { getContent, getUpdatedMdastNode, contentEditableProps, block = false } = props
   const { mdastNode, lexicalNode, focusEmitter } = useNestedEditorContext<T>()
   const updateMdastNode = useMdastNodeUpdater<T>()

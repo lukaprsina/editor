@@ -28,6 +28,7 @@ export type MdastJsx = MdxJsxTextElement | MdxJsxFlowElement
 
 /**
  * Defines the structure of a JSX component property.
+ * @group JSX
  */
 export interface JsxPropertyDescriptor {
   /**
@@ -46,6 +47,7 @@ export interface JsxPropertyDescriptor {
 
 /**
  * Defines the structure of a JSX component that can be used within the markdown document.
+ * @group JSX
  */
 export interface JsxComponentDescriptor {
   /**
@@ -81,30 +83,20 @@ export interface JsxComponentDescriptor {
 }
 
 /**
- * The properties passed to a JSX Editor component.
+ * The properties passed to a custom JSX Editor component.
+ * @group JSX
  */
 export interface JsxEditorProps {
   /** The MDAST node to edit */
   mdastNode: MdastJsx
+  /** The descriptor that activated the editor */
   descriptor: JsxComponentDescriptor
 }
 
-export type JsxTextPayload = {
-  kind: 'text'
-  name: string
-  props: Record<string, string>
-  children?: MdxJsxTextElement['children']
-}
-
-export type JsxFlowPayload = {
-  kind: 'flow'
-  name: string
-  props: Record<string, string>
-  children?: MdxJsxFlowElement['children']
-}
-
-export type InsertJsxPayload = JsxTextPayload | JsxFlowPayload
-
+/**
+ * Determines wether the given node is a JSX node.
+ * @group JSX
+ */
 export function isMdastJsxNode(node: Mdast.Content | Mdast.Parent | Mdast.Root): node is MdastJsx {
   return node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement'
 }
@@ -117,7 +109,24 @@ function toMdastJsxAttributes(attributes: Record<string, string>): MdastJsx['att
   }))
 }
 
-export const insertJsx$ = Signal<InsertJsxPayload>((r) => {
+/**
+ * A signal that inserts a new JSX node with the published payload.
+ * @group JSX
+ */
+export const insertJsx$ = Signal<
+  | {
+      kind: 'text'
+      name: string
+      props: Record<string, string>
+      children?: MdxJsxTextElement['children']
+    }
+  | {
+      kind: 'flow'
+      name: string
+      props: Record<string, string>
+      children?: MdxJsxFlowElement['children']
+    }
+>((r) => {
   r.link(
     r.pipe(
       insertJsx$,
@@ -148,16 +157,15 @@ export const insertJsx$ = Signal<InsertJsxPayload>((r) => {
 })
 
 /**
- * The parameters of the `jsxPlugin`.
+ * a plugin that adds support for JSX elements (MDX).
+ * @group JSX
  */
-export interface JsxPluginParams {
+export const jsxPlugin = realmPlugin<{
   /**
    * A set of descriptors that document the JSX elements used in the document.
    */
   jsxComponentDescriptors: JsxComponentDescriptor[]
-}
-
-export const jsxPlugin = realmPlugin<JsxPluginParams>({
+}>({
   init: (realm) => {
     realm.pubIn({
       // import

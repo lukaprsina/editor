@@ -6,7 +6,8 @@ import { useCellValue } from '@mdxeditor/gurx'
 import { editorRootElementRef$ } from '../../core'
 
 /**
- * A small styled wrapper around the radix-ui tooltip, that lets you display an instan tooltip on hover.
+ * A styled wrapper around the radix-ui tooltip, that lets you display an instant tooltip on hover.
+ * @group Toolbar Primitives
  */
 export const TooltipWrap = React.forwardRef<HTMLButtonElement, { title: string; children: ReactNode }>(({ title, children }, ref) => {
   const editorRootElementRef = useCellValue(editorRootElementRef$)

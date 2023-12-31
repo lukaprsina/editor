@@ -8,6 +8,8 @@ import { iconComponentFor$ } from '../../core'
 /**
  * A toolbar dropdown button that allows the user to insert admonitions.
  * For this to work, you need to have the `directives` plugin enabled with the {@link AdmonitionDirectiveDescriptor} configured.
+ *
+ * @group Toolbar Components
  */
 export const InsertAdmonition = () => {
   const insertDirective = usePublisher(insertDirective$)

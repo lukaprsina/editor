@@ -77,21 +77,17 @@ export const SelectButtonTrigger: React.FC<{ children: React.ReactNode; title: s
 }
 
 /**
- * The properties of the {@link Select} React component.
+ * A toolbar primitive you can use to build dropdowns, such as the block type select.
+ * See {@link SelectProps} for more details.
+ * @group Toolbar Primitives
  */
-export interface SelectProps<T extends string> {
+export const Select = <T extends string>(props: {
   value: T
   onChange: (value: T) => void
   triggerTitle: string
   placeholder: string
   items: ({ label: string | JSX.Element; value: T } | 'separator')[]
-}
-
-/**
- * A toolbar primitive you can use to build dropdowns, such as the block type select.
- * See {@link SelectProps} for more details.
- */
-export const Select = <T extends string>(props: SelectProps<T>) => {
+}) => {
   return (
     <RadixSelect.Root value={props.value || undefined} onValueChange={props.onChange}>
       <SelectTrigger title={props.triggerTitle} placeholder={props.placeholder} />

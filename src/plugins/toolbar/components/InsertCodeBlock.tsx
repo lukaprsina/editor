@@ -8,6 +8,8 @@ import { iconComponentFor$ } from '../../core'
  * A toolbar button that allows the user to insert a fenced code block.
  * Once the code block is focused, you can construct a special code block toolbar for it, using the {@link ConditionalContents} primitive.
  * See the {@link ConditionalContents} documentation for an example.
+ *
+ * @group Toolbar Components
  */
 export const InsertCodeBlock: React.FC = () => {
   const insertCodeBlock = usePublisher(insertCodeBlock$)

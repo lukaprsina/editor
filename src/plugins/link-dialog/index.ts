@@ -17,14 +17,26 @@ import { LinkDialog } from './LinkDialog'
 import { Action, Cell, Signal, filter, map, withLatestFrom } from '@mdxeditor/gurx'
 import { realmPlugin } from '../../RealmWithPlugins'
 
+/**
+ * Describes the boundaries of the current selection so that the link dialog can position itself accordingly.
+ * @group Link Dialog
+ */
 export type RectData = Pick<DOMRect, 'height' | 'width' | 'top' | 'left'>
 
+/**
+ * The state of the link dialog when it is inactive.
+ * @group Link Dialog
+ */
 export type InactiveLinkDialog = {
   type: 'inactive'
   rectangle?: undefined
   linkNodeKey?: undefined
 }
 
+/**
+ * The state of the link dialog when it is in preview mode.
+ * @group Link Dialog
+ */
 export type PreviewLinkDialog = {
   type: 'preview'
   title: string
@@ -33,6 +45,10 @@ export type PreviewLinkDialog = {
   rectangle: RectData
 }
 
+/**
+ * The state of the link dialog when it is in edit mode.
+ * @group Link Dialog
+ */
 export type EditLinkDialog = {
   type: 'edit'
   initialUrl: string
@@ -41,11 +57,6 @@ export type EditLinkDialog = {
   title: string
   linkNodeKey: string
   rectangle: RectData
-}
-
-export type LinkDialogPluginParamsType = {
-  LinkDialog?: () => JSX.Element
-  linkAutocompleteSuggestions?: string[]
 }
 
 function getLinkNodeInSelection(selection: RangeSelection | null) {
@@ -64,9 +75,17 @@ function getLinkNodeInSelection(selection: RangeSelection | null) {
   }
   return null
 }
-export const dialogState$ = Cell(false)
-// node that publishes signals when the window gets resized or scrolled
+
+/**
+ * Emits when the window is resized.
+ * @group Utils
+ */
 export const onWindowChange$ = Signal<true>()
+
+/**
+ * The current state of the link dialog.
+ * @group Link Dialog
+ */
 export const linkDialogState$ = Cell<InactiveLinkDialog | PreviewLinkDialog | EditLinkDialog>({ type: 'inactive' }, (r) => {
   r.pub(createActiveEditorSubscription$, (editor) => {
     return editor.registerCommand(
@@ -92,7 +111,7 @@ export const linkDialogState$ = Cell<InactiveLinkDialog | PreviewLinkDialog | Ed
           // we open the dialog if there's an actual selection
           // or if the cursor is inside a link
           if ($isRangeSelection(selection)) {
-            r.pub(openLinkEditDialog$, true)
+            r.pub(openLinkEditDialog$)
             event.stopPropagation()
             event.preventDefault()
             return true
@@ -221,18 +240,43 @@ export const linkDialogState$ = Cell<InactiveLinkDialog | PreviewLinkDialog | Ed
   )
 })
 
-// actions
+/**
+ * A signal that updates the current link with the published payload.
+ * @group Link Dialog
+ */
 export const updateLink$ = Signal<{ url: string; title: string }>()
-export const cancelLinkEdit$ = Signal<true>()
-export const applyLinkChanges$ = Signal<true>()
-export const switchFromPreviewToLinkEdit$ = Signal<true>()
+/**
+ * An action that cancel the edit of the current link.
+ * @group Link Dialog
+ */
+export const cancelLinkEdit$ = Action()
+/**
+ * A signal that confirms the updated values of the current link.
+ * @group Link Dialog
+ */
+export const applyLinkChanges$ = Action()
+
+/**
+ * An action that switches the link dialog from preview mode to edit mode.
+ * @group Link Dialog
+ */
+export const switchFromPreviewToLinkEdit$ = Action()
+
+/**
+ * A signal that removes the current link.
+ * @group Link Dialog
+ */
 export const removeLink$ = Action((r) => {
   r.sub(r.pipe(removeLink$, withLatestFrom(activeEditor$)), ([, editor]) => {
     editor?.dispatchCommand(TOGGLE_LINK_COMMAND, null)
   })
 })
 
-export const openLinkEditDialog$ = Signal<true>((r) => {
+/**
+ * An action that opens the link dialog.
+ * @group Link Dialog
+ */
+export const openLinkEditDialog$ = Action((r) => {
   r.sub(
     r.pipe(
       openLinkEditDialog$,
@@ -271,9 +315,16 @@ export const openLinkEditDialog$ = Signal<true>((r) => {
   )
 })
 
+/** @internal */
 export const linkAutocompleteSuggestions$ = Cell<string[]>([])
 
-export const linkDialogPlugin = realmPlugin<LinkDialogPluginParamsType>({
+/**
+ * @group Link Dialog
+ */
+export const linkDialogPlugin = realmPlugin<{
+  LinkDialog?: () => JSX.Element
+  linkAutocompleteSuggestions?: string[]
+}>({
   init(r, params) {
     r.pub(addComposerChild$, params?.LinkDialog || LinkDialog)
   },

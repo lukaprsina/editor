@@ -16,8 +16,15 @@ import { MdastHeadingVisitor } from './MdastHeadingVisitor'
 
 const FORMATTING_KEYS = [48, 49, 50, 51, 52, 53, 54]
 
+/**
+ * @group Headings
+ */
 export const ALL_HEADING_LEVELS = [1, 2, 3, 4, 5, 6] as const
-export type HEADING_LEVEL = (typeof ALL_HEADING_LEVELS)[number]
+
+/**
+ * @group Headings
+ */
+export type HEADING_LEVEL = 1 | 2 | 3 | 4 | 5 | 6
 
 const CODE_TO_HEADING_LEVEL_MAP: Record<string, HEADING_LEVEL> = {
   49: 1,
@@ -28,6 +35,10 @@ const CODE_TO_HEADING_LEVEL_MAP: Record<string, HEADING_LEVEL> = {
   54: 6
 }
 
+/**
+ * Holds the allowed heading levels.
+ * @group Headings
+ */
 export const allowedHeadingLevels$ = Cell<ReadonlyArray<HEADING_LEVEL>>(ALL_HEADING_LEVELS, (r) => {
   r.pub(createRootEditorSubscription$, (theRootEditor) => {
     return theRootEditor.registerCommand<KeyboardEvent>(
@@ -58,19 +69,16 @@ export const allowedHeadingLevels$ = Cell<ReadonlyArray<HEADING_LEVEL>>(ALL_HEAD
 })
 
 /**
- * The parameters of the `headingsPlugin`.
+ * A plugin that adds support for markdown headings.
+ * @group Headings
  */
-export interface HeadingsPluginParams {
+export const headingsPlugin = realmPlugin<{
   /**
    * Allows you to limit the headings used in the editor. Affects the block type dropdown and the keyboard shortcuts.
    * @default [1, 2, 3, 4, 5, 6]
    */
   allowedHeadingLevels?: ReadonlyArray<HEADING_LEVEL>
-}
-/**
- * @internal
- */
-export const headingsPlugin = realmPlugin<HeadingsPluginParams | undefined>({
+}>({
   init(realm) {
     realm.pubIn({
       [addActivePlugin$]: 'headings',

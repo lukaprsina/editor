@@ -9,6 +9,7 @@ import { iconComponentFor$ } from '../../core'
 /**
  * A toolbar button that allows the user to insert a {@link https://jekyllrb.com/docs/front-matter/ | front-matter} editor (if one is not already present).
  * For this to work, you need to have the `frontmatterPlugin` plugin enabled.
+ * @group Toolbar Components
  */
 export const InsertFrontmatter: React.FC = () => {
   const insertFrontmatter = usePublisher(insertFrontmatter$)
@@ -20,7 +21,7 @@ export const InsertFrontmatter: React.FC = () => {
       className={classNames({
         [styles.activeToolbarButton]: hasFrontmatter
       })}
-      onClick={insertFrontmatter.bind(null, true)}
+      onClick={() => insertFrontmatter()}
     >
       {iconComponentFor('frontmatter')}
     </ButtonWithTooltip>

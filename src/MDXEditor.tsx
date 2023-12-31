@@ -83,70 +83,6 @@ const RichTextEditor: React.FC = () => {
   )
 }
 
-/**
- * The properties of the {@link MDXEditor} React component.
- */
-export interface MDXEditorProps {
-  /**
-   * the CSS class to apply to the content editable element of the editor.
-   * Use this to style the various content elements like lists and blockquotes.
-   */
-  contentEditableClassName?: string
-  /**
-   * The markdown to edit. Notice that this is read only when the component is mounted.
-   * To change the component content dynamically, use the `MDXEditorMethods.setMarkdown` method.
-   */
-  markdown: string
-  /**
-   * Triggered when the editor value changes. The callback is not throttled, you can use any throttling mechanism
-   * if you intend to do auto-saving.
-   */
-  onChange?: (markdown: string) => void
-  /**
-   * Triggered when the markdown parser encounters an error. The payload includes the invalid source and the error message.
-   */
-  onError?: (payload: { error: string; source: string }) => void
-  /**
-   * The markdown options used to generate the resulting markdown.
-   * See {@link https://github.com/syntax-tree/mdast-util-to-markdown#options | the mdast-util-to-markdown docs} for the full list of options.
-   */
-  toMarkdownOptions?: ToMarkdownOptions
-  /**
-   * The plugins to use in the editor.
-   */
-  plugins?: RealmPlugin[]
-  /**
-   * The class name to apply to the root component element. Use this if you want to change the editor dimensions, maximum height, etc.
-   * For a content-specific styling, Use `contentEditableClassName` property.
-   */
-  className?: string
-  /**
-   * pass if you would like to have the editor automatically focused when mounted.
-   */
-  autoFocus?: boolean | { defaultSelection?: 'rootStart' | 'rootEnd'; preventScroll?: boolean }
-  /**
-   * Triggered when focus leaves the editor
-   */
-  onBlur?: (e: FocusEvent) => void
-  /**
-   * The placeholder contents, displayed when the editor is empty.
-   */
-  placeholder?: React.ReactNode
-  /**
-   * pass if you would like to have the editor in read-only mode.
-   * Note: Don't use this mode to render content for consumption - render the markdown using a library of your choice instead.
-   */
-  readOnly?: boolean
-  /**
-   * Use this prop to customize the icons used across the editor. Pass a function that returns an icon (JSX) for a given icon key.
-   */
-  iconComponentFor?: (name: IconKey) => JSX.Element
-  /**
-   * Set to false if you want to suppress the processing of HTML tags.
-   */
-  suppressHtmlProcessing?: boolean
-}
-
 const DEFAULT_MARKDOWN_OPTIONS: ToMarkdownOptions = {
   listItemIndent: 'one'
 }
@@ -172,6 +108,7 @@ const defaultIconComponentFor = (name: IconKey) => {
  *  const mdxEditorRef = React.useRef<MDXEditorMethods>(null)
  *  <MDXEditor ref={mdxEditorRef} />
  * ```
+ * @group MDXEditor
  */
 export interface MDXEditorMethods {
   /**
@@ -256,7 +193,73 @@ const Methods: React.FC<{ mdxRef: React.ForwardedRef<MDXEditorMethods> }> = ({ m
 }
 
 /**
- * The MDXEditor React component. See {@link MDXEditorProps} for the list of properties supported and the {@link MDXEditorMethods} for the methods accessible through the ref.
+ * The props for the {@link MDXEditor} React component.
+ * @group MDXEditor
+ */
+export interface MDXEditorProps {
+  /**
+   * the CSS class to apply to the content editable element of the editor.
+   * Use this to style the various content elements like lists and blockquotes.
+   */
+  contentEditableClassName?: string
+  /**
+   * The markdown to edit. Notice that this is read only when the component is mounted.
+   * To change the component content dynamically, use the `MDXEditorMethods.setMarkdown` method.
+   */
+  markdown: string
+  /**
+   * Triggered when the editor value changes. The callback is not throttled, you can use any throttling mechanism
+   * if you intend to do auto-saving.
+   */
+  onChange?: (markdown: string) => void
+  /**
+   * Triggered when the markdown parser encounters an error. The payload includes the invalid source and the error message.
+   */
+  onError?: (payload: { error: string; source: string }) => void
+  /**
+   * The markdown options used to generate the resulting markdown.
+   * See {@link https://github.com/syntax-tree/mdast-util-to-markdown#options | the mdast-util-to-markdown docs} for the full list of options.
+   */
+  toMarkdownOptions?: ToMarkdownOptions
+  /**
+   * The plugins to use in the editor.
+   */
+  plugins?: RealmPlugin[]
+  /**
+   * The class name to apply to the root component element. Use this if you want to change the editor dimensions, maximum height, etc.
+   * For a content-specific styling, Use `contentEditableClassName` property.
+   */
+  className?: string
+  /**
+   * pass if you would like to have the editor automatically focused when mounted.
+   */
+  autoFocus?: boolean | { defaultSelection?: 'rootStart' | 'rootEnd'; preventScroll?: boolean }
+  /**
+   * Triggered when focus leaves the editor
+   */
+  onBlur?: (e: FocusEvent) => void
+  /**
+   * The placeholder contents, displayed when the editor is empty.
+   */
+  placeholder?: React.ReactNode
+  /**
+   * pass if you would like to have the editor in read-only mode.
+   * Note: Don't use this mode to render content for consumption - render the markdown using a library of your choice instead.
+   */
+  readOnly?: boolean
+  /**
+   * Use this prop to customize the icons used across the editor. Pass a function that returns an icon (JSX) for a given icon key.
+   */
+  iconComponentFor?: (name: IconKey) => JSX.Element
+  /**
+   * Set to false if you want to suppress the processing of HTML tags.
+   */
+  suppressHtmlProcessing?: boolean
+}
+
+/**
+ * The MDXEditor React component.
+ * @group MDXEditor
  */
 export const MDXEditor = React.forwardRef<MDXEditorMethods, MDXEditorProps>((props, ref) => {
   return (

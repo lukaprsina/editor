@@ -11,6 +11,7 @@ import { Directive } from 'mdast-util-directive'
  * A generic editor that can be used as an universal UI for any directive.
  * Allows editing of the directive content and properties.
  * Use this editor for the {@link DirectiveDescriptor} Editor option.
+ * @group Directive
  */
 export const GenericDirectiveEditor: React.FC<DirectiveEditorProps> = ({ mdastNode, descriptor }) => {
   const updateMdastNode = useMdastNodeUpdater()

@@ -1,6 +1,6 @@
 import { realmPlugin } from '../../RealmWithPlugins'
 import { $wrapNodeInElement } from '@lexical/utils'
-import { Cell, Signal, map, mapTo, withLatestFrom } from '@mdxeditor/gurx'
+import { Action, Cell, Signal, map, mapTo, withLatestFrom } from '@mdxeditor/gurx'
 import {
   $createParagraphNode,
   $createRangeSelection,
@@ -25,41 +25,91 @@ import {
 import { CAN_USE_DOM } from '../../utils/detectMac'
 import { addComposerChild$, addExportVisitor$, addImportVisitor$, addLexicalNode$, rootEditor$ } from '../core'
 import { ImageDialog } from './ImageDialog'
-import { $createImageNode, $isImageNode, CreateImageNodeOptions, ImageNode } from './ImageNode'
+import { $createImageNode, $isImageNode, CreateImageNodeParameters, ImageNode } from './ImageNode'
 import { LexicalImageVisitor } from './LexicalImageVisitor'
 import { MdastHtmlImageVisitor, MdastImageVisitor, MdastJsxImageVisitor } from './MdastImageVisitor'
 
 export * from './ImageNode'
 
+/**
+ * @group Image
+ */
 export type ImageUploadHandler = ((image: File) => Promise<string>) | null
+
+/**
+ * @group Image
+ */
 export type ImagePreviewHandler = ((imageSource: string) => Promise<string>) | null
 
-export interface InsertImageFormValues {
+/**
+ * @group Image
+ */
+export interface InsertImageParameters {
   src?: string
   altText?: string
   title?: string
   file: FileList
 }
 
+/**
+ * The state of the image dialog when it is inactive.
+ * @group Image
+ */
 export type InactiveImageDialogState = {
   type: 'inactive'
 }
 
+/**
+ * The state of the image dialog when it is in new mode.
+ * @group Image
+ */
 export type NewImageDialogState = {
   type: 'new'
 }
 
+/**
+ * The state of the image dialog when it is in editing an existing node.
+ * @group Image
+ */
 export type EditingImageDialogState = {
   type: 'editing'
   nodeKey: string
-  initialValues: Omit<InsertImageFormValues, 'file'>
+  initialValues: Omit<InsertImageParameters, 'file'>
 }
 
-export const insertImage$ = Signal<InsertImageFormValues>()
+/**
+ * A signal that inserts a new image node with the published payload.
+ * @group Image
+ */
+export const insertImage$ = Signal<InsertImageParameters>()
+/**
+ * Holds the autocomplete suggestions for image sources.
+ * @group Image
+ */
 export const imageAutocompleteSuggestions$ = Cell<string[]>([])
+
+/**
+ * Holds the disable image resize configuration flag.
+ * @group Image
+ */
 export const disableImageResize$ = Cell<boolean>(false)
+
+/**
+ * Holds the image upload handler callback.
+ * @group Image
+ */
 export const imageUploadHandler$ = Cell<ImageUploadHandler>(null)
+
+/**
+ * Holds the image preview handler callback.
+ * @group Image
+ */
 export const imagePreviewHandler$ = Cell<ImagePreviewHandler>(null)
+
+/**
+ * Holds the current state of the image dialog.
+ * @group Image
+ */
 export const imageDialogState$ = Cell<InactiveImageDialogState | NewImageDialogState | EditingImageDialogState>(
   { type: 'inactive' },
   (r) => {
@@ -178,9 +228,18 @@ export const imageDialogState$ = Cell<InactiveImageDialogState | NewImageDialogS
   }
 )
 
-export const openNewImageDialog$ = Signal<true>((r) => {
+/**
+ * Opens the new image dialog.
+ * @group Image
+ */
+export const openNewImageDialog$ = Action((r) => {
   r.link(r.pipe(openNewImageDialog$, mapTo({ type: 'new' })), imageDialogState$)
 })
+
+/**
+ * Opens the edit image dialog with the published parameters.
+ * @group Image
+ */
 export const openEditImageDialog$ = Signal<Omit<EditingImageDialogState, 'type'>>((r) => {
   r.link(
     r.pipe(
@@ -191,20 +250,30 @@ export const openEditImageDialog$ = Signal<Omit<EditingImageDialogState, 'type'>
   )
 })
 
-export const closeImageDialog$ = Signal<true>((r) => {
+/**
+ * Close the image dialog.
+ * @group Image
+ */
+export const closeImageDialog$ = Action((r) => {
   r.link(r.pipe(closeImageDialog$, mapTo({ type: 'inactive' })), imageDialogState$)
 })
 
-export const saveImage$ = Signal<InsertImageFormValues>()
+/**
+ * Saves the data from the image dialog
+ * @group Image
+ */
+export const saveImage$ = Signal<InsertImageParameters>()
 
-export interface ImagePluginParams {
+/**
+ * A plugin that adds support for images.
+ * @group Image
+ */
+export const imagePlugin = realmPlugin<{
   imageUploadHandler?: ImageUploadHandler
   imageAutocompleteSuggestions?: string[]
   disableImageResize?: boolean
   imagePreviewHandler?: ImagePreviewHandler
-}
-
-export const imagePlugin = realmPlugin<ImagePluginParams>({
+}>({
   init(realm) {
     realm.pubIn({
       [addImportVisitor$]: [MdastImageVisitor, MdastHtmlImageVisitor, MdastJsxImageVisitor],
@@ -225,7 +294,7 @@ export const imagePlugin = realmPlugin<ImagePluginParams>({
 })
 
 /** @internal */
-export type InsertImagePayload = Readonly<CreateImageNodeOptions>
+export type InsertImagePayload = Readonly<CreateImageNodeParameters>
 
 const getDOMSelection = (targetWindow: Window | null): Selection | null => (CAN_USE_DOM ? (targetWindow || window).getSelection() : null)
 

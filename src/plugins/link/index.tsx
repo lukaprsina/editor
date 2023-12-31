@@ -8,12 +8,17 @@ import { Cell } from '@mdxeditor/gurx'
 import { realmPlugin } from '../../RealmWithPlugins'
 import { addImportVisitor$, addLexicalNode$, addExportVisitor$, addComposerChild$, addActivePlugin$ } from '../core'
 
+/**
+ * Holds whether the auto-linking of URLs and email addresses is disabled.
+ * @group Links
+ */
 export const disableAutoLink$ = Cell(false)
 
 /**
- * The parameters used to configure the link plugin
+ * A plugin that adds support for links in the editor.
+ * @group Links
  */
-export interface LinkPluginParams {
+export const linkPlugin = realmPlugin<{
   /**
    * An optional function to validate the URL of a link.
    * By default, no validation is performed.
@@ -24,9 +29,7 @@ export interface LinkPluginParams {
    * @default false
    */
   disableAutoLink?: boolean
-}
-
-export const linkPlugin = realmPlugin<LinkPluginParams | undefined>({
+}>({
   init(realm, params) {
     const disableAutoLink = Boolean(params?.disableAutoLink)
     const linkPluginProps = params?.validateUrl ? { validateUrl: params.validateUrl } : {}

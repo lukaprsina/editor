@@ -15,7 +15,7 @@ import {
   quotePlugin,
   toolbarPlugin,
   realmPlugin,
-  CreateImageNodeOptions,
+  CreateImageNodeParameters,
   $createImageNode,
   imagePlugin,
   MdastImportVisitor,
@@ -227,7 +227,7 @@ const MdastImageDirectiveVisitor: MdastImportVisitor<TextDirective> = {
   },
 
   visitNode({ mdastNode, lexicalParent }) {
-    const payload: CreateImageNodeOptions = {
+    const payload: CreateImageNodeParameters = {
       src: mdastNode.attributes?.src ?? '',
       altText: (mdastNode.children[0] as Mdast.Text).value
     }

@@ -9,6 +9,7 @@ import { useCellValues } from '@mdxeditor/gurx'
 
 /**
  * A serialized representation of an {@link DirectiveNode}.
+ * @group Directive
  */
 export type SerializedDirectiveNode = Spread<
   {
@@ -22,33 +23,46 @@ export type SerializedDirectiveNode = Spread<
 let GENERATION = 0
 /**
  * A lexical node that represents an image. Use {@link "$createDirectiveNode"} to construct one.
+ * @group Directive
  */
 export class DirectiveNode extends DecoratorNode<React.JSX.Element> {
+  /** @internal */
   __mdastNode: Directive
+  /** @internal */
   __focusEmitter = voidEmitter()
 
+  /** @internal */
   static getType(): string {
     return 'directive'
   }
 
+  /** @internal */
   static clone(node: DirectiveNode): DirectiveNode {
     return new DirectiveNode(structuredClone(node.__mdastNode), node.__key)
   }
 
+  /** @internal */
   static importJSON(serializedNode: SerializedDirectiveNode): DirectiveNode {
     return $createDirectiveNode(serializedNode.mdastNode)
   }
 
+  /**
+   * Constructs a new {@link DirectiveNode} with the specified MDAST directive node as the object to edit.
+   */
   constructor(mdastNode: Directive, key?: NodeKey) {
     super(key)
     this.__mdastNode = mdastNode
     this.generation = GENERATION++
   }
 
+  /**
+   * Returns the MDAST node that is being edited.
+   */
   getMdastNode(): Directive {
     return this.__mdastNode
   }
 
+  /** @internal */
   exportJSON(): SerializedDirectiveNode {
     return {
       mdastNode: structuredClone(this.__mdastNode),
@@ -57,22 +71,31 @@ export class DirectiveNode extends DecoratorNode<React.JSX.Element> {
     }
   }
 
+  /** @internal */
   createDOM(): HTMLElement {
     return document.createElement(this.__mdastNode.type === 'textDirective' ? 'span' : 'div')
   }
 
+  /** @internal */
   updateDOM(): false {
     return false
   }
 
+  /**
+   * Sets a new MDAST node to edit.
+   */
   setMdastNode(mdastNode: Directive): void {
     this.getWritable().__mdastNode = mdastNode
   }
 
+  /**
+   * Focuses the direcitive editor.
+   */
   select = () => {
     this.__focusEmitter.publish()
   }
 
+  /** @internal */
   decorate(parentEditor: LexicalEditor, config: EditorConfig): JSX.Element {
     return (
       <DirectiveEditorContainer
@@ -85,22 +108,24 @@ export class DirectiveNode extends DecoratorNode<React.JSX.Element> {
     )
   }
 
+  /** @internal */
   isInline(): boolean {
     return this.__mdastNode.type === 'textDirective'
   }
 
+  /** @internal */
   isKeyboardSelectable(): boolean {
     return true
   }
 }
 
-export function DirectiveEditorContainer(props: {
+const DirectiveEditorContainer: React.FC<{
   parentEditor: LexicalEditor
   lexicalNode: DirectiveNode
   mdastNode: Directive
   config: EditorConfig
   focusEmitter: VoidEmitter
-}) {
+}> = (props) => {
   const { mdastNode } = props
   const [directiveDescriptors] = useCellValues(directiveDescriptors$)
   const descriptor = directiveDescriptors.find((descriptor) => descriptor.testNode(mdastNode))
@@ -118,7 +143,8 @@ export function DirectiveEditorContainer(props: {
 }
 
 /**
- * Creates an {@link DirectiveNode}.
+ * Creates an {@link DirectiveNode}. Use this instead of the constructor to follow the Lexical conventions.
+ * @group Directive
  */
 export function $createDirectiveNode(mdastNode: Directive, key?: NodeKey): DirectiveNode {
   return new DirectiveNode(mdastNode, key)
@@ -126,6 +152,7 @@ export function $createDirectiveNode(mdastNode: Directive, key?: NodeKey): Direc
 
 /**
  * Retruns true if the node is an {@link DirectiveNode}.
+ * @group Directive
  */
 export function $isDirectiveNode(node: LexicalNode | null | undefined): node is DirectiveNode {
   return node instanceof DirectiveNode

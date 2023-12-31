@@ -7,6 +7,7 @@ import { useCellValues, usePublisher } from '@mdxeditor/gurx'
 /**
  * A toolbar component that lets the user toggle code formatting.
  * Use for inline `code` elements (like variables, methods, etc).
+ * @group Toolbar Components
  */
 export const CodeToggle: React.FC = () => {
   const [currentFormat, iconComponentFor] = useCellValues(currentFormat$, iconComponentFor$)

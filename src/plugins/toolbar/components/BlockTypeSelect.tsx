@@ -9,6 +9,7 @@ import { Select } from '.././primitives/select'
 /**
  * A toolbar component that allows the user to change the block type of the current selection.
  * Supports paragraphs, headings and block quotes.
+ * @group Toolbar Components
  */
 export const BlockTypeSelect = () => {
   const convertSelectionToNode = usePublisher(convertSelectionToNode$)

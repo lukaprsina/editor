@@ -73,7 +73,8 @@ type Teardowns = (() => void)[]
 export type BlockType = 'paragraph' | 'quote' | HeadingTagType | ''
 
 /**
- * The type of the editor being edited currently. Custom editors can override this, so that the toolbar can change contents.
+ * The type of the editor being edited currently. Custom editors can override this, so that the toolbar can change its contents.
+ * @group Core
  */
 export interface EditorInFocus {
   editorType: string
@@ -83,21 +84,56 @@ export interface EditorInFocus {
 /** @internal */
 export const NESTED_EDITOR_UPDATED_COMMAND = createCommand<void>('NESTED_EDITOR_UPDATED_COMMAND')
 
+/**
+ * Holds a reference to the root Lexical editor instance.
+ * @group Core
+ */
 export const rootEditor$ = Cell<LexicalEditor | null>(null)
+
+/**
+ * Holds a reference to the current Lexical editor instance - can be the root editor or a nested editor.
+ * @group Core
+ */
 export const activeEditor$ = Cell<LexicalEditor | null>(null)
+
+/**
+ * Holds the CSS class name of the content editable element.
+ * @group Core
+ */
 export const contentEditableClassName$ = Cell('')
 
+/**
+ * Holds the readOnly state of the editor.
+ * @group Core
+ */
 export const readOnly$ = Cell(false, (r) => {
   r.sub(r.pipe(readOnly$, withLatestFrom(rootEditor$)), ([readOnly, rootEditor]) => {
     rootEditor?.setEditable(!readOnly)
   })
 })
 
+/** @internal */
 export const placeholder$ = Cell<React.ReactNode>('')
+
+/** @internal */
 export const autoFocus$ = Cell<boolean | { defaultSelection?: 'rootStart' | 'rootEnd'; preventScroll?: boolean }>(false)
+
+/**
+ * Holds whether the editor is in focus or not.
+ * @group Core
+ */
 export const inFocus$ = Cell(false)
+
+/**
+ * Holds the current format of the selection.
+ * @group Core
+ */
 export const currentFormat$ = Cell(0)
+
+/** @internal */
 export const markdownProcessingError$ = Cell<{ error: string; source: string } | null>(null)
+
+/** @internal */
 export const markdownErrorSignal$ = Signal<{ error: string; source: string }>((r) => {
   r.link(
     r.pipe(
@@ -108,12 +144,20 @@ export const markdownErrorSignal$ = Signal<{ error: string; source: string }>((r
   )
 })
 
+/**
+ * Applies the published format to the current selection.
+ * @group Core
+ */
 export const applyFormat$ = Signal<TextFormatType>((r) => {
   r.sub(r.pipe(applyFormat$, withLatestFrom(activeEditor$)), ([format, theEditor]) => {
     theEditor?.dispatchCommand(FORMAT_TEXT_COMMAND, format)
   })
 })
 
+/**
+ * Holds the current selection.
+ * @group Core
+ */
 export const currentSelection$ = Cell<RangeSelection | null>(null, (r) => {
   r.sub(r.pipe(currentSelection$, withLatestFrom(activeEditor$)), ([selection, theEditor]) => {
     if (!selection || !theEditor) {
@@ -143,40 +187,91 @@ export const currentSelection$ = Cell<RangeSelection | null>(null, (r) => {
   })
 })
 
+/** @internal */
 export const initialMarkdown$ = Cell('')
 
+/**
+ * Holds the current markdown value.
+ * @group Core
+ */
 export const markdown$ = Cell('')
+
+/** @internal */
 const markdownSignal$ = Signal<string>((r) => {
   r.link(markdown$, markdownSignal$)
   r.link(initialMarkdown$, markdown$)
 })
 
 // import configuration
+/** @internal */
 export const importVisitors$ = Cell<MdastImportVisitor<Mdast.Content>[]>([])
+/** @internal */
 export const syntaxExtensions$ = Cell<MarkdownParseOptions['syntaxExtensions']>([])
+/** @internal */
 export const mdastExtensions$ = Cell<NonNullable<MarkdownParseOptions['mdastExtensions']>>([])
-
+/** @internal */
 export const usedLexicalNodes$ = Cell<Klass<LexicalNode>[]>([])
 
 // export configuration
+/** @internal */
 export const exportVisitors$ = Cell<NonNullable<LexicalConvertOptions['visitors']>>([])
+/** @internal */
 export const toMarkdownExtensions$ = Cell<NonNullable<LexicalConvertOptions['toMarkdownExtensions']>>([])
+/** @internal */
 export const toMarkdownOptions$ = Cell<NonNullable<LexicalConvertOptions['toMarkdownOptions']>>({})
 
 // the JSX plugin will fill in these
+/** @internal */
 export const jsxIsAvailable$ = Cell(false)
+/** @internal */
 export const jsxComponentDescriptors$ = Cell<JsxComponentDescriptor[]>([])
 
-// used for the various popups, dialogs, and tooltips
+/**
+ * A reference to a DOM element. used for the various popups, dialogs, and tooltips
+ * @group Core
+ */
 export const editorRootElementRef$ = Cell<React.RefObject<HTMLDivElement> | null>(null)
 
+/**
+ * Registers a lexical node to be used in the editor.
+ * @group Core
+ */
 export const addLexicalNode$ = Appender(usedLexicalNodes$)
+
+/**
+ * Registers a visitor to be used when importing markdown.
+ * @group Markdown Processing
+ */
 export const addImportVisitor$ = Appender(importVisitors$)
+
+/**
+ * Adds a syntax extension to the markdown parser.
+ * @group Markdown Processing
+ */
 export const addSyntaxExtension$ = Appender(syntaxExtensions$)
+
+/**
+ * Adds a mdast extension to the markdown parser.
+ * @group Markdown Processing
+ */
 export const addMdastExtension$ = Appender(mdastExtensions$)
+
+/**
+ * Adds an export visitor to be used when exporting markdown from the Lexical tree.
+ * @group Markdown Processing
+ */
 export const addExportVisitor$ = Appender(exportVisitors$)
+
+/**
+ * Adds a markdown to string extension to be used when exporting markdown from the Lexical tree.
+ * @group Markdown Processing
+ */
 export const addToMarkdownExtension$ = Appender(toMarkdownExtensions$)
 
+/**
+ * Sets a new markdown value for the editor, replacing the current one.
+ * @group Core
+ */
 export const setMarkdown$ = Signal<string>((r) => {
   r.sub(
     r.pipe(
@@ -213,21 +308,37 @@ function rebind() {
   }, [] as Teardowns)
 }
 
+/** @internal */
 export const activeEditorSubscriptions$ = Cell<EditorSubscription[]>([], (r) => {
   r.pipe(r.combine(activeEditorSubscriptions$, activeEditor$), rebind())
 })
 
+/** @internal */
 export const rootEditorSubscriptions$ = Cell<EditorSubscription[]>([], (r) => {
   r.pipe(r.combine(rootEditorSubscriptions$, rootEditor$), rebind())
 })
 
+/**
+ * The currently focused editor
+ * @group Core
+ */
 export const editorInFocus$ = Cell<EditorInFocus | null>(null)
+
+/**
+ * Emits when the editor loses focus
+ * @group Core
+ */
 export const onBlur$ = Signal<FocusEvent>()
 
+/**
+ * A callback that returns the icon component for the given name.
+ * @group Core
+ */
 export const iconComponentFor$ = Cell<(name: IconKey) => React.ReactNode>((name: IconKey) => {
   throw new Error(`No icon component for ${name}`)
 })
 
+/** @internal */
 export function Appender<T>(cell$: NodeRef<T[]>, init?: (r: Realm, sig$: NodeRef<T | T[]>) => void) {
   return Signal<T | T[]>((r, sig$) => {
     r.changeWith(cell$, sig$, (values, newValue) => {
@@ -257,6 +368,18 @@ function handleSelectionChange(r: Realm) {
   }
 }
 
+/**
+ * An input signal that lets you register a new {@link EditorSubscription} for the root editor.
+ * @example
+ * ```tsx
+ * realm.pub(createRootEditorSubscription$, (theEditor) => {
+ *  return theEditor.registerUpdateListener(() => { ... })
+ *  // or a command
+ *  // return theEditor.registerCommand('my-command', () => { ... })
+ * })
+ * ```
+ * @group Core
+ */
 export const createRootEditorSubscription$ = Appender(rootEditorSubscriptions$, (r, sig$) => {
   // track the active editor - this is necessary for the nested editors
   r.pub(sig$, [
@@ -356,6 +479,19 @@ export const createRootEditorSubscription$ = Appender(rootEditorSubscriptions$, 
   ])
 })
 
+/**
+ * An input signal that lets you register a new {@link EditorSubscription} for the active editor.
+ * The subscriptions are automatically cleaned up and re-bound when the active editor changes.
+ * @example
+ * ```tsx
+ * realm.pub(createActiveEditorSubscription$, (theEditor) => {
+ *  return theEditor.registerUpdateListener(() => { ... })
+ *  // or a command
+ *  // return theEditor.registerCommand('my-command', () => { ... })
+ * })
+ * ```
+ * @group Core
+ */
 export const createActiveEditorSubscription$ = Appender(activeEditorSubscriptions$, (r, sig$) => {
   r.pub(sig$, [
     (editor) => {
@@ -416,6 +552,7 @@ function tryImportingMarkdown(r: Realm, markdownValue: string) {
 }
 
 // gets bound to the root editor state getter
+/** @internal */
 export const initialRootEditorState$ = Cell<InitialEditorStateType | null>(null, (r) => {
   r.pub(initialRootEditorState$, (theRootEditor) => {
     r.pub(rootEditor$, theRootEditor)
@@ -439,23 +576,61 @@ export const initialRootEditorState$ = Cell<InitialEditorStateType | null>(null,
   })
 })
 
+/** @internal */
 export const composerChildren$ = Cell<React.ComponentType[]>([])
+
+/**
+ * Lets you add React components to the {@link https://lexical.dev/docs/react/plugins | Lexical Composer} element.
+ * @group Core
+ */
 export const addComposerChild$ = Appender(composerChildren$)
 
+/** @internal */
 export const topAreaChildren$ = Cell<React.ComponentType[]>([])
+
+/**
+ * Lets you add React components on top of the editor (like the toolbar).
+ * @group Core
+ */
 export const addTopAreaChild$ = Appender(topAreaChildren$)
 
+/** @internal */
 export const editorWrappers$ = Cell<React.ComponentType<{ children: React.ReactNode }>[]>([])
+
+/**
+ * Lets you add React components as wrappers around the editor.
+ * @group Core
+ */
 export const addEditorWrapper$ = Appender(editorWrappers$)
 
+/** @internal */
 export const nestedEditorChildren$ = Cell<React.ComponentType[]>([])
+
+/**
+ * Lets you add React components as children of any registered nested editor (useful for Lexical plugins).
+ * @group Core
+ */
 export const addNestedEditorChild$ = Appender(nestedEditorChildren$)
 
+/** @internal */
 export const historyState$ = Cell(createEmptyHistoryState())
 
+/**
+ * Holds the current block type of the selection (i.e. Heading, Paragraph, etc).
+ * @group Core
+ */
 export const currentBlockType$ = Cell<BlockType | ''>('')
+
+/**
+ * Allows you to change the block type of the current selection.
+ * @group Core
+ */
 export const applyBlockType$ = Signal<BlockType>()
 
+/**
+ * Converts the current selection to a node created by the published factory.
+ * @group Core
+ */
 export const convertSelectionToNode$ = Signal<() => ElementNode>((r) => {
   r.sub(r.pipe(convertSelectionToNode$, withLatestFrom(activeEditor$)), ([factory, editor]) => {
     editor?.update(() => {
@@ -470,6 +645,10 @@ export const convertSelectionToNode$ = Signal<() => ElementNode>((r) => {
   })
 })
 
+/**
+ * Inserts a decorator node (constructed by the published factory) at the current selection.
+ * @group Core
+ */
 export const insertDecoratorNode$ = Signal<() => DecoratorNode<unknown>>((r) => {
   r.sub(r.pipe(insertDecoratorNode$, withLatestFrom(activeEditor$)), ([nodeFactory, theEditor]) => {
     theEditor?.focus(
@@ -508,8 +687,16 @@ export const insertDecoratorNode$ = Signal<() => DecoratorNode<unknown>>((r) => 
   })
 })
 
+/**
+ * The possible view modes of the editor when using the {@link diffSourcePlugin}.
+ * @group Diff/Source
+ */
 export type ViewMode = 'rich-text' | 'source' | 'diff'
 
+/**
+ * The current view mode of the editor when using the {@link diffSourcePlugin}.
+ * @group Diff/Source
+ */
 export const viewMode$ = Cell<ViewMode>('rich-text', (r) => {
   r.sub(
     r.pipe(
@@ -533,15 +720,29 @@ export const viewMode$ = Cell<ViewMode>('rich-text', (r) => {
   )
 })
 
+/**
+ * The current value of the source/diff editors.
+ * @group Diff/Source
+ */
 export const markdownSourceEditorValue$ = Cell('', (r) => {
   r.link(markdown$, markdownSourceEditorValue$)
   r.link(markdownSourceEditorValue$, markdownSignal$)
 })
 
+/**
+ * The names of the plugins that are currently active.
+ * @group Core
+ */
 export const activePlugins$ = Cell<string[]>([])
+
+/**
+ * Add a plugin name to the list of active plugins.
+ * @group Core
+ */
 export const addActivePlugin$ = Appender(activePlugins$)
 
-export interface CorePluginParams {
+/** @internal */
+export const corePlugin = realmPlugin<{
   initialMarkdown: string
   contentEditableClassName: string
   placeholder?: React.ReactNode
@@ -553,9 +754,7 @@ export interface CorePluginParams {
   readOnly: boolean
   iconComponentFor: (name: IconKey) => React.ReactElement
   suppressHtmlProcessing?: boolean
-}
-
-export const corePlugin = realmPlugin<CorePluginParams>({
+}>({
   init(r, params) {
     r.register(createRootEditorSubscription$)
     r.register(createActiveEditorSubscription$)

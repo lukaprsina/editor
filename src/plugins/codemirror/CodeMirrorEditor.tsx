@@ -7,6 +7,7 @@ import { readOnly$ } from '../core'
 import { useCodeMirrorRef } from '../sandpack/useCodeMirrorRef'
 import { useCellValue } from '@mdxeditor/gurx'
 
+/** @internal */
 export const CodeMirrorEditor = ({ language, nodeKey, code, focusEmitter }: CodeBlockEditorProps) => {
   const codeMirrorRef = useCodeMirrorRef(nodeKey, 'codeblock', 'jsx', focusEmitter)
   const readOnly = useCellValue(readOnly$)

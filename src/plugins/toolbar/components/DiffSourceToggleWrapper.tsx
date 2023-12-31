@@ -17,6 +17,8 @@ import { SingleChoiceToggleGroup } from '.././primitives/toolbar'
  *    }), diffSourcePlugin()]}
  *  />
  * ```
+ *
+ * @group Toolbar Components
  */
 export const DiffSourceToggleWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [viewMode, iconComponentFor] = useCellValues(viewMode$, iconComponentFor$)

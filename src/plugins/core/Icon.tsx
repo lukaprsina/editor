@@ -44,6 +44,10 @@ import settings from '@/icons/settings.svg?react'
 import table from '@/icons/table.svg?react'
 import undo from '@/icons/undo.svg?react'
 
+/**
+ * A type that represents the possible icon names that can be used with the {@link iconComponentFor$} cell.
+ * @group Core
+ */
 export type IconKey =
   | 'add_column'
   | 'add_photo'

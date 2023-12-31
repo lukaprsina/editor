@@ -2,17 +2,30 @@ import React from 'react'
 import { Realm, RealmContext } from '@mdxeditor/gurx'
 import { tap } from './utils/fp'
 
-export interface RealmPluginDefinition<Params> {
-  init?: (realm: Realm, params?: Params) => void
-  update?: (realm: Realm, params?: Params) => void
-}
-
+/**
+ * A plugin for the editor.
+ * @group Core
+ */
 export interface RealmPlugin {
   init?: (realm: Realm) => void
   update?: (realm: Realm) => void
 }
 
-export function realmPlugin<Params>(plugin: RealmPluginDefinition<Params>): (params?: Params) => RealmPlugin {
+/**
+ * A function that creates an editor plugin.
+ * @typeParam Params - The parameters for the plugin.
+ * @group Core
+ */
+export function realmPlugin<Params>(plugin: {
+  /**
+   * Called when the MDXEditor component is mounted and the plugin is initialized.
+   */
+  init?: (realm: Realm, params?: Params) => void
+  /**
+   * Called on each re-render. Use this to update the realm with updated property values.
+   */
+  update?: (realm: Realm, params?: Params) => void
+}): (params?: Params) => RealmPlugin {
   return function (params?: Params) {
     return {
       init: (realm: Realm) => plugin.init?.(realm, params),
@@ -21,6 +34,7 @@ export function realmPlugin<Params>(plugin: RealmPluginDefinition<Params>): (par
   }
 }
 
+/** @internal */
 export function RealmWithPlugins({ children, plugins }: { children: React.ReactNode; plugins: RealmPlugin[] }) {
   const theRealm = React.useMemo(() => {
     return tap(new Realm(), (r) => {

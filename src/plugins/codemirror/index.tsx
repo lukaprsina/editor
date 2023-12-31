@@ -3,6 +3,10 @@ import { Cell, Signal, map } from '@mdxeditor/gurx'
 import { appendCodeBlockEditorDescriptor$, insertCodeBlock$ } from '../codeblock'
 import { CodeMirrorEditor } from './CodeMirrorEditor'
 
+/**
+ * The codemirror code block languages.
+ * @group CodeMirror
+ */
 export const codeBlockLanguages$ = Cell({
   js: 'JavaScript',
   ts: 'TypeScript',
@@ -11,6 +15,10 @@ export const codeBlockLanguages$ = Cell({
   css: 'CSS'
 })
 
+/**
+ * Inserts a new code mirror code block with the specified parameters.
+ * @group CodeMirror
+ */
 export const insertCodeMirror$ = Signal<{ language: string; code: string }>((r) => {
   r.link(
     r.pipe(
@@ -27,6 +35,10 @@ export const insertCodeMirror$ = Signal<{ language: string; code: string }>((r) 
   )
 })
 
+/**
+ * A plugin that adds lets users editor code blocks with CodeMirror.
+ * @group CodeMirror
+ */
 export const codeMirrorPlugin = realmPlugin<{ codeBlockLanguages: Record<string, string> }>({
   update(r, params) {
     r.pub(codeBlockLanguages$, params?.codeBlockLanguages)

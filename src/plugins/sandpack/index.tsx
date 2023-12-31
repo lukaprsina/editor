@@ -8,7 +8,8 @@ import { realmPlugin } from '../../RealmWithPlugins'
 type SandpackProviderProps = React.ComponentProps<typeof SandpackProvider>
 
 /**
- * Defines a single preset that can be used to create a sandbox.
+ * Defines a single preset that can be used to create a Sandpack sandbox.
+ * @group Sandpack
  */
 export interface SandpackPreset {
   /**
@@ -56,6 +57,7 @@ export interface SandpackPreset {
 
 /**
  * The configuration for the available sandpack presets.
+ * @group Sandpack
  */
 export interface SandpackConfig {
   /**
@@ -95,7 +97,17 @@ const defaultSandpackConfig: SandpackConfig = {
   ]
 }
 
+/**
+ * Holds the current sandpack configuration.
+ * @group Sandpack
+ */
 export const sandpackConfig$ = Cell<SandpackConfig>(defaultSandpackConfig)
+
+/**
+ * A signal that inserts a new sandpack code block with the specified name from the {@link SandpackConfig}.
+ * If no name is specified, the default preset will be used.
+ * @group Sandpack
+ */
 export const insertSandpack$ = Signal<string>((r) => {
   r.link(
     r.pipe(
@@ -120,6 +132,10 @@ export const insertSandpack$ = Signal<string>((r) => {
   )
 })
 
+/**
+ * A plugin that adds support for sandpack code blocks in the editor.
+ * @group Sandpack
+ */
 export const sandpackPlugin = realmPlugin<{ sandpackConfig: SandpackConfig }>({
   init(realm) {
     realm.pub(appendCodeBlockEditorDescriptor$, {

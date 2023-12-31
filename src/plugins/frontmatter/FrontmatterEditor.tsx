@@ -45,7 +45,7 @@ export const FrontmatterEditor = ({ yaml, onChange }: FrontmatterEditorProps) =>
   const onSubmit = React.useCallback(
     ({ yamlConfig }: { yamlConfig: YamlConfig }) => {
       if (yamlConfig.length === 0) {
-        removeFrontmatter(true)
+        removeFrontmatter()
         setFrontmatterDialogOpen(false)
         return
       }

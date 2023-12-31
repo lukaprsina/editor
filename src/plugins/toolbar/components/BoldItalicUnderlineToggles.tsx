@@ -6,6 +6,7 @@ import { MultipleChoiceToggleGroup } from '.././primitives/toolbar'
 
 /**
  * A toolbar component that lets the user toggle bold, italic and underline formatting.
+ * @group Toolbar Components
  */
 export const BoldItalicUnderlineToggles: React.FC = () => {
   const [currentFormat, iconComponentFor] = useCellValues(currentFormat$, iconComponentFor$)

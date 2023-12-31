@@ -20,6 +20,7 @@ export * from './DirectiveNode'
 /**
  * Implement this interface to create a custom editor for markdown directives.
  * Pass the object in the `directivesPlugin` parameters.
+ * @group Directive
  */
 export interface DirectiveDescriptor<T extends Directive = Directive> {
   /**
@@ -51,6 +52,7 @@ export interface DirectiveDescriptor<T extends Directive = Directive> {
 
 /**
  * The properties passed to the {@link DirectiveDescriptor.Editor} component.
+ * @group Directive
  */
 export interface DirectiveEditorProps<T extends Directive = Directive> {
   /**
@@ -71,14 +73,21 @@ export interface DirectiveEditorProps<T extends Directive = Directive> {
   descriptor: DirectiveDescriptor
 }
 
-export interface InsertDirectivePayload {
+/**
+ * Contains the currently registered directive descriptors.
+ * @group Directive
+ */
+export const directiveDescriptors$ = Cell<DirectiveDescriptor<any>[]>([])
+
+/**
+ * A signal that inserts a new directive node with the published payload.
+ * @group Directive
+ */
+export const insertDirective$ = Signal<{
   type: Directive['type']
   name: string
   attributes?: Directive['attributes']
-}
-
-export const directiveDescriptors$ = Cell<DirectiveDescriptor<any>[]>([])
-export const insertDirective$ = Signal<InsertDirectivePayload>((r) => {
+}>((r) => {
   r.link(
     r.pipe(
       insertDirective$,
@@ -91,19 +100,15 @@ export const insertDirective$ = Signal<InsertDirectivePayload>((r) => {
 })
 
 /**
- * The parameters used to configure the `directivesPlugin` function.
+ * A plugin that adds support for markdown directives.
+ * @group Directive
  */
-export interface DirectivesPluginParams {
+export const directivesPlugin = realmPlugin<{
   /**
    * Use this to register your custom directive editors. You can also use the built-in {@link GenericDirectiveEditor}.
    */
   directiveDescriptors: DirectiveDescriptor<any>[]
-}
-
-/**
- * The plugin that adds support for markdown directives.
- */
-export const directivesPlugin = realmPlugin<DirectivesPluginParams>({
+}>({
   update: (realm, params) => {
     realm.pub(directiveDescriptors$, params?.directiveDescriptors || [])
   },

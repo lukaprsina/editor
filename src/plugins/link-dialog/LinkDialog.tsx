@@ -95,6 +95,7 @@ export function LinkEditForm({ url, title, onSubmit, onCancel, linkAutocompleteS
   )
 }
 
+/** @internal */
 export const LinkDialog: React.FC = () => {
   const [editorRootElementRef, activeEditor, iconComponentFor, linkDialogState, linkAutocompleteSuggestions] = useCellValues(
     editorRootElementRef$,
@@ -156,7 +157,7 @@ export const LinkDialog: React.FC = () => {
               url={linkDialogState.url}
               title={linkDialogState.title}
               onSubmit={updateLink}
-              onCancel={cancelLinkEdit.bind(null, true)}
+              onCancel={cancelLinkEdit.bind(null)}
               linkAutocompleteSuggestions={linkAutocompleteSuggestions}
             />
           )}
@@ -172,7 +173,7 @@ export const LinkDialog: React.FC = () => {
                 <span>{linkDialogState.url}</span>
                 {urlIsExternal && iconComponentFor('open_in_new')}
               </a>
-              <ActionButton onClick={() => switchFromPreviewToLinkEdit(true)} title="Edit link URL" aria-label="Edit link URL">
+              <ActionButton onClick={() => switchFromPreviewToLinkEdit()} title="Edit link URL" aria-label="Edit link URL">
                 {iconComponentFor('edit')}
               </ActionButton>
               <Tooltip.Provider>

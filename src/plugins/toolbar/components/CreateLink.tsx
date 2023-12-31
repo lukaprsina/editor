@@ -7,6 +7,7 @@ import { iconComponentFor$ } from '../../core'
 /**
  * A toolbar component that opens the link edit dialog.
  * For this component to work, you must include the `linkDialogPlugin`.
+ * @group Toolbar Components
  */
 export const CreateLink = () => {
   const openLinkDialog = usePublisher(openLinkEditDialog$)
@@ -15,7 +16,7 @@ export const CreateLink = () => {
     <ButtonWithTooltip
       title="Create link"
       onClick={(_) => {
-        openLinkDialog(true)
+        openLinkDialog()
       }}
     >
       {iconComponentFor('link')}

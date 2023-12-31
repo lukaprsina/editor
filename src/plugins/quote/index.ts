@@ -4,6 +4,10 @@ import { LexicalQuoteVisitor } from './LexicalQuoteVisitor'
 import { realmPlugin } from '../../RealmWithPlugins'
 import { addActivePlugin$, addImportVisitor$, addLexicalNode$, addExportVisitor$ } from '../core'
 
+/**
+ * A plugin that adds support for block quotes to the editor.
+ * @group Quote
+ */
 export const quotePlugin = realmPlugin({
   init(realm) {
     realm.pubIn({

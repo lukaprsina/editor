@@ -8,6 +8,7 @@ import { MultipleChoiceToggleGroup } from '.././primitives/toolbar'
 
 /**
  * A toolbar component that lets the user undo and redo changes in the editor.
+ * @group Toolbar Components
  */
 export const UndoRedo: React.FC = () => {
   const [iconComponentFor, activeEditor] = useCellValues(iconComponentFor$, activeEditor$)

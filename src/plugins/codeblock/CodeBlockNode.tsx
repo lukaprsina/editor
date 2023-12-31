@@ -136,21 +136,10 @@ export class CodeBlockNode extends DecoratorNode<JSX.Element> {
   }
 }
 
-export interface CodeBlockEditorContainerProps extends CodeBlockEditorProps {
-  /** The Lexical editor that contains the node */
-  parentEditor: LexicalEditor
-  /** The Lexical node that is being edited */
-  codeBlockNode: CodeBlockNode
-}
-
-type CodeBlockContextProviderProps = {
-  parentEditor: LexicalEditor
-  lexicalNode: CodeBlockNode
-  children: React.ReactNode
-}
-
 /**
- * A set of functions that modify the underlying code block node. Get this with the {@link useCodeBlockEditorContext} hook.
+ * A set of functions that modify the underlying code block node.
+ * Access this with the {@link useCodeBlockEditorContext} hook in your custom code editor components.
+ * @group Code Block
  */
 export interface CodeBlockEditorContextValue {
   /**
@@ -174,7 +163,11 @@ export interface CodeBlockEditorContextValue {
 
 const CodeBlockEditorContext = React.createContext<CodeBlockEditorContextValue | null>(null)
 
-const CodeBlockEditorContextProvider = ({ parentEditor, lexicalNode, children }: CodeBlockContextProviderProps) => {
+const CodeBlockEditorContextProvider: React.FC<{
+  parentEditor: LexicalEditor
+  lexicalNode: CodeBlockNode
+  children: React.ReactNode
+}> = ({ parentEditor, lexicalNode, children }) => {
   return (
     <CodeBlockEditorContext.Provider
       value={{
@@ -206,6 +199,7 @@ const CodeBlockEditorContextProvider = ({ parentEditor, lexicalNode, children }:
 
 /**
  * Use this hook in your custom code block editors to modify the underlying node code, language, and meta.
+ * @group Code Block
  */
 export function useCodeBlockEditorContext() {
   const context = React.useContext(CodeBlockEditorContext)
@@ -215,7 +209,14 @@ export function useCodeBlockEditorContext() {
   return context
 }
 
-export function CodeBlockEditorContainer(props: CodeBlockEditorContainerProps) {
+const CodeBlockEditorContainer: React.FC<
+  {
+    /** The Lexical editor that contains the node */
+    parentEditor: LexicalEditor
+    /** The Lexical node that is being edited */
+    codeBlockNode: CodeBlockNode
+  } & CodeBlockEditorProps
+> = (props) => {
   const codeBlockEditorDescriptors = useCellValue(codeBlockEditorDescriptors$)
 
   const descriptor = codeBlockEditorDescriptors
@@ -240,6 +241,7 @@ export function CodeBlockEditorContainer(props: CodeBlockEditorContainerProps) {
 /**
  * Creates a {@link CodeBlockNode}.
  * @param options - The code contents, the language  (i.e. js, jsx, etc.), and the additional meta data of the block.
+ * @group Code Block
  */
 export function $createCodeBlockNode(options: Partial<CreateCodeBlockNodeOptions>): CodeBlockNode {
   const { code = '', language = '', meta = '' } = options
@@ -248,6 +250,7 @@ export function $createCodeBlockNode(options: Partial<CreateCodeBlockNodeOptions
 
 /**
  * Returns true if the given node is a {@link CodeBlockNode}.
+ * @group Code Block
  */
 export function $isCodeBlockNode(node: LexicalNode | null | undefined): node is CodeBlockNode {
   return node instanceof CodeBlockNode

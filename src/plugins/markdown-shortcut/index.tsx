@@ -25,6 +25,10 @@ import { $createCodeBlockNode, CodeBlockNode } from '../codeblock/CodeBlockNode'
 import { activePlugins$, addComposerChild$, addNestedEditorChild$ } from '../core'
 import { HEADING_LEVEL, allowedHeadingLevels$ } from '../headings'
 
+/**
+ * A plugin that adds markdown shortcuts to the editor.
+ * @group Markdown Shortcuts
+ */
 export const markdownShortcutPlugin = realmPlugin({
   init(realm) {
     const pluginIds = realm.getValue(activePlugins$)

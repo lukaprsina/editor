@@ -9,6 +9,7 @@ import { useCellValues } from '@mdxeditor/gurx'
 /**
  * A component that allows the user to change the admonition type of the current selection.
  * For this component to work, you must pass the {@link AdmonitionDirectiveDescriptor} to the `directivesPlugin` `directiveDescriptors` parameter.
+ * @group Toolbar Components
  */
 export const ChangeAdmonitionType = () => {
   const [editorInFocus, rootEditor] = useCellValues(editorInFocus$, rootEditor$)

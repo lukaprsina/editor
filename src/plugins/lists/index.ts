@@ -46,6 +46,10 @@ const ListTypeCommandMap = new Map<ListType | '', LexicalCommand<void>>([
   ['', REMOVE_LIST_COMMAND]
 ])
 
+/**
+ * The current list type in the editor.
+ * @group Lists
+ */
 export const currentListType$ = Cell<ListType | ''>('', (r) => {
   r.sub(r.pipe(currentSelection$, withLatestFrom(activeEditor$)), ([selection, theEditor]) => {
     if (!selection || !theEditor) {
@@ -74,18 +78,26 @@ export const currentListType$ = Cell<ListType | ''>('', (r) => {
         const type = parentList ? parentList.getListType() : element.getListType()
         r.pub(currentListType$, type)
       } else {
-        r.pub(currentListType$, null)
+        r.pub(currentListType$, '')
       }
     }
   })
 })
 
+/**
+ * Converts the current selection to the specified list type.
+ * @group Lists
+ */
 export const applyListType$ = Signal<ListType | ''>((r) => {
   r.sub(r.pipe(applyListType$, withLatestFrom(activeEditor$)), ([listType, theEditor]) => {
     theEditor?.dispatchCommand(ListTypeCommandMap.get(listType)!, undefined)
   })
 })
 
+/**
+ * A plugin that adds support for markdown lists.
+ * @group Lists
+ */
 export const listsPlugin = realmPlugin({
   init(realm) {
     realm.getValue(rootEditor$)?.registerCommand(INDENT_CONTENT_COMMAND, () => !isIndentPermitted(7), COMMAND_PRIORITY_CRITICAL)

@@ -9,9 +9,11 @@ import { iconComponentFor$ } from '.'
 import { PopoverContent, PopoverPortal } from './ui/PopoverUtils'
 
 /**
- * The properties of the {@link PropertyPopover} React component.
+ * A React component that can be used in custom editors to edit the properties of the node.
+ * Displays a simple, static key/value editing UI in a popover.
+ * @group Custom Editor Primitives
  */
-export interface PropertyPopoverProps {
+export const PropertyPopover: React.FC<{
   /**
    * The properties to edit. The key is the name of the property, and the value is the initial value.
    */
@@ -24,13 +26,7 @@ export interface PropertyPopoverProps {
    * The title to display in the popover.
    */
   title: string
-}
-
-/**
- * A React component that can be used in custom editors to edit the properties of the node.
- * Displays a simple, static key/value editing UI in a popover.
- */
-export const PropertyPopover: React.FC<PropertyPopoverProps> = ({ title, properties, onChange }) => {
+}> = ({ title, properties, onChange }) => {
   const [open, setOpen] = React.useState(false)
   const iconComponentFor = useCellValue(iconComponentFor$)
 

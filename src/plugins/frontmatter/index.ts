@@ -9,7 +9,7 @@ import {
   createRootEditorSubscription$,
   rootEditor$
 } from '../core'
-import { Cell, Signal, withLatestFrom } from '@mdxeditor/gurx'
+import { Action, Cell, Signal, withLatestFrom } from '@mdxeditor/gurx'
 import { $getRoot } from 'lexical'
 import { frontmatterFromMarkdown, frontmatterToMarkdown } from 'mdast-util-frontmatter'
 import { frontmatter } from 'micromark-extension-frontmatter'
@@ -17,9 +17,17 @@ import { $createFrontmatterNode, $isFrontmatterNode, FrontmatterNode } from './F
 import { LexicalFrontmatterVisitor } from './LexicalFrontmatterVisitor'
 import { MdastFrontmatterVisitor } from './MdastFrontmatterVisitor'
 
+/**
+ * Whether the frontmatter dialog is open.
+ * @group Frontmatter
+ */
 export const frontmatterDialogOpen$ = Cell(false)
 
-export const insertFrontmatter$ = Signal<true>((r) => {
+/**
+ * Inserts a frontmatter node at the beginning of the markdown document.
+ * @group Frontmatter
+ */
+export const insertFrontmatter$ = Action((r) => {
   r.sub(r.pipe(insertFrontmatter$, withLatestFrom(rootEditor$)), ([, rootEditor]) => {
     rootEditor?.update(() => {
       const firstItem = $getRoot().getFirstChild()
@@ -36,7 +44,11 @@ export const insertFrontmatter$ = Signal<true>((r) => {
   })
 })
 
-export const removeFrontmatter$ = Signal<true>((r) => {
+/**
+ * Removes the frontmatter node from the markdown document.
+ * @group Frontmatter
+ */
+export const removeFrontmatter$ = Action((r) => {
   r.sub(r.pipe(removeFrontmatter$, withLatestFrom(rootEditor$)), ([, rootEditor]) => {
     rootEditor?.update(() => {
       const firstItem = $getRoot().getFirstChild()
@@ -48,6 +60,10 @@ export const removeFrontmatter$ = Signal<true>((r) => {
   })
 })
 
+/**
+ * Whether the markdown document has a frontmatter node.
+ * @group Frontmatter
+ */
 export const hasFrontmatter$ = Cell(false, (r) => {
   r.pub(createRootEditorSubscription$, (rootEditor) => {
     return rootEditor.registerUpdateListener(({ editorState }) => {
@@ -58,6 +74,10 @@ export const hasFrontmatter$ = Cell(false, (r) => {
   })
 })
 
+/**
+ * A plugin that adds support for frontmatter.
+ * @group Frontmatter
+ */
 export const frontmatterPlugin = realmPlugin({
   init: (realm) => {
     realm.pubIn({

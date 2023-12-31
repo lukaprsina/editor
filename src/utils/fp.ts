@@ -1,9 +1,3 @@
-/**
- * Utils includes a handful of functional utilities inspired by or taken from the [Ramda library](https://ramdajs.com/);
- * Use these for your convenience - they are here so that urx is zero-dependency package.
- * @packageDocumentation
- */
-
 /** @internal */
 export interface Proc {
   (): unknown
@@ -11,6 +5,7 @@ export interface Proc {
 
 /**
  * Performs left to right composition of two functions.
+ * @group Utils
  */
 export function compose<I, A, R>(a: (arg: A) => R, b: (arg: I) => A): (arg: I) => R {
   return (arg: I) => a(b(arg))
@@ -18,6 +13,7 @@ export function compose<I, A, R>(a: (arg: A) => R, b: (arg: I) => A): (arg: I) =
 
 /**
  * Takes a value and applies a function to it.
+ * @group Utils
  */
 export function thrush<I, K>(arg: I, proc: (arg: I) => K) {
   return proc(arg)
@@ -25,6 +21,7 @@ export function thrush<I, K>(arg: I, proc: (arg: I) => K) {
 
 /**
  * Takes a 2 argument function and partially applies the first argument.
+ * @group Utils
  */
 export function curry2to1<T, K, R>(proc: (arg1: T, arg2: K) => R, arg1: T): (arg2: K) => R {
   return (arg2) => proc(arg1, arg2)
@@ -32,6 +29,7 @@ export function curry2to1<T, K, R>(proc: (arg1: T, arg2: K) => R, arg1: T): (arg
 
 /**
  * Takes a 1 argument function and returns a function which when called, executes it with the provided argument.
+ * @group Utils
  */
 export function curry1to0<T, R>(proc: (arg: T) => R, arg: T): () => R {
   return () => proc(arg)
@@ -39,6 +37,7 @@ export function curry1to0<T, R>(proc: (arg: T) => R, arg: T): () => R {
 
 /**
  * Returns a function which extracts the property from from the passed object.
+ * @group Utils
  */
 export function prop<T extends Record<string, unknown>>(property: keyof T) {
   return (object: T) => object[property]
@@ -46,6 +45,7 @@ export function prop<T extends Record<string, unknown>>(property: keyof T) {
 
 /**
  * Calls callback with the first argument, and returns it.
+ * @group Utils
  */
 export function tap<T>(arg: T, proc: (arg: T) => unknown): T {
   proc(arg)
@@ -54,6 +54,7 @@ export function tap<T>(arg: T, proc: (arg: T) => unknown): T {
 
 /**
  * Calls the passed function.
+ * @group Utils
  */
 export function call(proc: Proc) {
   proc()
@@ -61,6 +62,7 @@ export function call(proc: Proc) {
 
 /**
  * returns a function which when called always returns the passed value
+ * @group Utils
  */
 export function always<T>(value: T) {
   return () => value
@@ -69,6 +71,7 @@ export function always<T>(value: T) {
 /**
  * returns a function which calls all passed functions in the passed order.
  * joinProc does not pass arguments or collect return values.
+ * @group Utils
  */
 export function joinProc(...procs: Proc[]) {
   return () => {
@@ -76,5 +79,8 @@ export function joinProc(...procs: Proc[]) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+/**
+ * an empty function
+ * @group Utils
+ */
 export function noop() {}
