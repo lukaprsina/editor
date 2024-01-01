@@ -23,5 +23,7 @@
     "notExported": true,
     "invalidLink": true,
     "notDocumented": false
-  }
+  },
+  "allReflectionsHaveOwnDocument": true,
+  "hideBreadcrumbs": true,
 }

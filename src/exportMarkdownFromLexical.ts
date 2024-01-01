@@ -82,6 +82,7 @@ export interface LexicalExportVisitor<LN extends LexicalNode, UN extends Mdast.C
 
 /**
  * A generic visitor that can be used to process any lexical node.
+ * @group Markdown Processing
  */
 export type LexicalVisitor = LexicalExportVisitor<LexicalNode, Mdast.Content>
 
