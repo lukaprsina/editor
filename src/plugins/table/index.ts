@@ -83,8 +83,8 @@ export const tablePlugin = realmPlugin({
   init(realm) {
     realm.pubIn({
       // import
-      [addMdastExtension$]: gfmTableFromMarkdown,
-      [addSyntaxExtension$]: gfmTable,
+      [addMdastExtension$]: gfmTableFromMarkdown(),
+      [addSyntaxExtension$]: gfmTable(),
       [addImportVisitor$]: MdastTableVisitor,
       // export
       [addLexicalNode$]: TableNode,

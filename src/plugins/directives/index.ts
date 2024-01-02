@@ -116,13 +116,13 @@ export const directivesPlugin = realmPlugin<{
   init: (realm) => {
     realm.pubIn({
       // import
-      [addMdastExtension$]: directiveFromMarkdown,
+      [addMdastExtension$]: directiveFromMarkdown(),
       [addSyntaxExtension$]: directive(),
       [addImportVisitor$]: MdastDirectiveVisitor,
       // export
       [addLexicalNode$]: DirectiveNode,
       [addExportVisitor$]: DirectiveVisitor,
-      [addToMarkdownExtension$]: directiveToMarkdown
+      [addToMarkdownExtension$]: directiveToMarkdown()
     })
   }
 })

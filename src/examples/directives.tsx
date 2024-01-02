@@ -253,11 +253,11 @@ const LexicalImageNodeVisitor: LexicalExportVisitor<ImageNode, Directives> = {
 const imageAsDirectivePlugin = realmPlugin({
   init(realm) {
     realm.pubIn({
-      [addMdastExtension$]: directiveFromMarkdown,
+      [addMdastExtension$]: directiveFromMarkdown(),
       [addSyntaxExtension$]: directive(),
       [addImportVisitor$]: MdastImageDirectiveVisitor,
       [addExportVisitor$]: LexicalImageNodeVisitor,
-      [addToMarkdownExtension$]: directiveToMarkdown
+      [addToMarkdownExtension$]: directiveToMarkdown()
     })
   }
 })

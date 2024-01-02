@@ -104,12 +104,12 @@ export const listsPlugin = realmPlugin({
 
     realm.pubIn({
       [addActivePlugin$]: 'lists',
-      [addMdastExtension$]: gfmTaskListItemFromMarkdown,
-      [addSyntaxExtension$]: gfmTaskListItem,
+      [addMdastExtension$]: gfmTaskListItemFromMarkdown(),
+      [addSyntaxExtension$]: gfmTaskListItem(),
       [addImportVisitor$]: [MdastListVisitor, MdastListItemVisitor],
       [addLexicalNode$]: [ListItemNode, ListNode],
       [addExportVisitor$]: [LexicalListVisitor, LexicalListItemVisitor],
-      [addToMarkdownExtension$]: gfmTaskListItemToMarkdown,
+      [addToMarkdownExtension$]: gfmTaskListItemToMarkdown(),
       [addComposerChild$]: [TabIndentationPlugin, ListPlugin, CheckListPlugin],
       [addNestedEditorChild$]: [TabIndentationPlugin, ListPlugin, CheckListPlugin]
     })

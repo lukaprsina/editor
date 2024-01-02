@@ -38,7 +38,7 @@
     "@codemirror/merge": "^6.4.0",
     "@codemirror/state": "^6.4.0",
     "@codemirror/view": "^6.23.0",
-    "@codesandbox/sandpack-react": "^2.6.7",
+    "@codesandbox/sandpack-react": "^2.10.0",
     "@lexical/clipboard": "^0.12.4",
     "@lexical/link": "^0.12.4",
     "@lexical/list": "^0.12.4",
