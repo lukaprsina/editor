@@ -17,10 +17,13 @@ export const GenericDirectiveEditor: React.FC<DirectiveEditorProps> = ({ mdastNo
   const updateMdastNode = useMdastNodeUpdater()
 
   const properties = React.useMemo(() => {
-    return descriptor.attributes.reduce((acc, attributeName) => {
-      acc[attributeName] = (mdastNode.attributes || {})[attributeName] || ''
-      return acc
-    }, {} as Record<string, string>)
+    return descriptor.attributes.reduce(
+      (acc, attributeName) => {
+        acc[attributeName] = (mdastNode.attributes || {})[attributeName] || ''
+        return acc
+      },
+      {} as Record<string, string>
+    )
   }, [mdastNode, descriptor])
 
   const onChange = React.useCallback(

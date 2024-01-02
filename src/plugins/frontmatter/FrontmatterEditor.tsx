@@ -49,12 +49,15 @@ export const FrontmatterEditor = ({ yaml, onChange }: FrontmatterEditorProps) =>
         setFrontmatterDialogOpen(false)
         return
       }
-      const yaml = yamlConfig.reduce((acc, { key, value }) => {
-        if (key && value) {
-          acc[key] = value
-        }
-        return acc
-      }, {} as Record<string, string>)
+      const yaml = yamlConfig.reduce(
+        (acc, { key, value }) => {
+          if (key && value) {
+            acc[key] = value
+          }
+          return acc
+        },
+        {} as Record<string, string>
+      )
       onChange(YamlParser.dump(yaml).trim())
       setFrontmatterDialogOpen(false)
     },

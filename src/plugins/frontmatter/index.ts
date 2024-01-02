@@ -9,7 +9,7 @@ import {
   createRootEditorSubscription$,
   rootEditor$
 } from '../core'
-import { Action, Cell, Signal, withLatestFrom } from '@mdxeditor/gurx'
+import { Action, Cell, withLatestFrom } from '@mdxeditor/gurx'
 import { $getRoot } from 'lexical'
 import { frontmatterFromMarkdown, frontmatterToMarkdown } from 'mdast-util-frontmatter'
 import { frontmatter } from 'micromark-extension-frontmatter'

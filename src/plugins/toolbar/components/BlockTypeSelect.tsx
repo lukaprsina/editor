@@ -30,7 +30,7 @@ export const BlockTypeSelect = () => {
   if (hasHeadings) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const allowedHeadingLevels = useCellValue(allowedHeadingLevels$)
-    items.push(...allowedHeadingLevels.map((n) => ({ label: `Heading ${n}`, value: `h${n}` } as const)))
+    items.push(...allowedHeadingLevels.map((n) => ({ label: `Heading ${n}`, value: `h${n}` }) as const))
   }
 
   return (
