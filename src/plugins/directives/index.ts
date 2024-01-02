@@ -10,7 +10,7 @@ import {
 } from '../core'
 import { Cell, Signal, map } from '@mdxeditor/gurx'
 import { LexicalEditor } from 'lexical'
-import { Directive, directiveFromMarkdown, directiveToMarkdown } from 'mdast-util-directive'
+import { Directives, directiveFromMarkdown, directiveToMarkdown } from 'mdast-util-directive'
 import { directive } from 'micromark-extension-directive'
 import { $createDirectiveNode, DirectiveNode } from './DirectiveNode'
 import { DirectiveVisitor } from './DirectiveVisitor'
@@ -22,12 +22,12 @@ export * from './DirectiveNode'
  * Pass the object in the `directivesPlugin` parameters.
  * @group Directive
  */
-export interface DirectiveDescriptor<T extends Directive = Directive> {
+export interface DirectiveDescriptor<T extends Directives = Directives> {
   /**
    * Whether the descriptor's Editor should be used for the given node.
    * @param node - The directive mdast node. You can code your logic against the node's name, type, attributes, children, etc.
    */
-  testNode(node: Directive): boolean
+  testNode(node: Directives): boolean
   /**
    * The name of the descriptor - use this if you're building UI for the user to select a directive.
    */
@@ -54,7 +54,7 @@ export interface DirectiveDescriptor<T extends Directive = Directive> {
  * The properties passed to the {@link DirectiveDescriptor.Editor} component.
  * @group Directive
  */
-export interface DirectiveEditorProps<T extends Directive = Directive> {
+export interface DirectiveEditorProps<T extends Directives = Directives> {
   /**
    * The mdast directive node.
    */
@@ -84,9 +84,9 @@ export const directiveDescriptors$ = Cell<DirectiveDescriptor<any>[]>([])
  * @group Directive
  */
 export const insertDirective$ = Signal<{
-  type: Directive['type']
+  type: Directives['type']
   name: string
-  attributes?: Directive['attributes']
+  attributes?: Directives['attributes']
 }>((r) => {
   r.link(
     r.pipe(

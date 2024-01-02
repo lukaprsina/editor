@@ -35,7 +35,7 @@ import {
 import * as Mdast from 'mdast'
 
 import admonitionMarkdown from './assets/admonition.md?raw'
-import { TextDirective, Directive, LeafDirective, directiveFromMarkdown, directiveToMarkdown } from 'mdast-util-directive'
+import { TextDirective, Directives, LeafDirective, directiveFromMarkdown, directiveToMarkdown } from 'mdast-util-directive'
 import { directive } from 'micromark-extension-directive'
 import { ElementNode } from 'lexical'
 import { usePublisher } from '@mdxeditor/gurx'
@@ -235,7 +235,7 @@ const MdastImageDirectiveVisitor: MdastImportVisitor<TextDirective> = {
   }
 }
 
-const LexicalImageNodeVisitor: LexicalExportVisitor<ImageNode, Directive> = {
+const LexicalImageNodeVisitor: LexicalExportVisitor<ImageNode, Directives> = {
   testLexicalNode: $isImageNode,
   visitLexicalNode({ lexicalNode, mdastParent, actions }) {
     const mdastNode: TextDirective = {

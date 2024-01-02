@@ -1,7 +1,7 @@
 import React from 'react'
 import type { EditorConfig, LexicalEditor, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical'
 import { DecoratorNode } from 'lexical'
-import { Directive } from 'mdast-util-directive'
+import { Directives } from 'mdast-util-directive'
 import { NestedEditorsContext } from '../core/NestedLexicalEditor'
 import { directiveDescriptors$ } from '.'
 import { VoidEmitter, voidEmitter } from '../../utils/voidEmitter'
@@ -13,7 +13,7 @@ import { useCellValues } from '@mdxeditor/gurx'
  */
 export type SerializedDirectiveNode = Spread<
   {
-    mdastNode: Directive
+    mdastNode: Directives
     type: 'directive'
     version: 1
   },
@@ -27,7 +27,7 @@ let GENERATION = 0
  */
 export class DirectiveNode extends DecoratorNode<React.JSX.Element> {
   /** @internal */
-  __mdastNode: Directive
+  __mdastNode: Directives
   /** @internal */
   __focusEmitter = voidEmitter()
 
@@ -49,7 +49,7 @@ export class DirectiveNode extends DecoratorNode<React.JSX.Element> {
   /**
    * Constructs a new {@link DirectiveNode} with the specified MDAST directive node as the object to edit.
    */
-  constructor(mdastNode: Directive, key?: NodeKey) {
+  constructor(mdastNode: Directives, key?: NodeKey) {
     super(key)
     this.__mdastNode = mdastNode
     this.generation = GENERATION++
@@ -58,7 +58,7 @@ export class DirectiveNode extends DecoratorNode<React.JSX.Element> {
   /**
    * Returns the MDAST node that is being edited.
    */
-  getMdastNode(): Directive {
+  getMdastNode(): Directives {
     return this.__mdastNode
   }
 
@@ -84,7 +84,7 @@ export class DirectiveNode extends DecoratorNode<React.JSX.Element> {
   /**
    * Sets a new MDAST node to edit.
    */
-  setMdastNode(mdastNode: Directive): void {
+  setMdastNode(mdastNode: Directives): void {
     this.getWritable().__mdastNode = mdastNode
   }
 
@@ -122,7 +122,7 @@ export class DirectiveNode extends DecoratorNode<React.JSX.Element> {
 const DirectiveEditorContainer: React.FC<{
   parentEditor: LexicalEditor
   lexicalNode: DirectiveNode
-  mdastNode: Directive
+  mdastNode: Directives
   config: EditorConfig
   focusEmitter: VoidEmitter
 }> = (props) => {
@@ -146,7 +146,7 @@ const DirectiveEditorContainer: React.FC<{
  * Creates an {@link DirectiveNode}. Use this instead of the constructor to follow the Lexical conventions.
  * @group Directive
  */
-export function $createDirectiveNode(mdastNode: Directive, key?: NodeKey): DirectiveNode {
+export function $createDirectiveNode(mdastNode: Directives, key?: NodeKey): DirectiveNode {
   return new DirectiveNode(mdastNode, key)
 }
 
