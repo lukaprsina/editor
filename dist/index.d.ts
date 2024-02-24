@@ -1241,7 +1241,7 @@ export declare const imageUploadHandler$: NodeRef<ImageUploadHandler>;
 /**
  * @group Image
  */
-export declare type ImageUploadHandler = ((image: File) => Promise<string>) | null;
+export declare type ImageUploadHandler = ((image: File) => Promise<string | undefined>) | null;
 
 /* Excluded from this release type: importMarkdownToLexical */
 

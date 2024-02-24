@@ -20,6 +20,8 @@ const imageDialogState$ = Cell(
       r.pipe(saveImage$, withLatestFrom(activeEditor$, imageUploadHandler$, imageDialogState$)),
       ([values, theEditor, imageUploadHandler, dialogState]) => {
         const handler = dialogState.type === "editing" ? (src) => {
+          if (typeof src === "undefined")
+            return;
           theEditor == null ? void 0 : theEditor.update(() => {
             const { nodeKey } = dialogState;
             const imageNode = $getNodeByKey(nodeKey);
@@ -29,6 +31,8 @@ const imageDialogState$ = Cell(
           });
           r.pub(imageDialogState$, { type: "inactive" });
         } : (src) => {
+          if (typeof src === "undefined")
+            return;
           theEditor == null ? void 0 : theEditor.update(() => {
             const imageNode = $createImageNode({ altText: values.altText ?? "", src, title: values.title ?? "" });
             $insertNodes([imageNode]);
@@ -96,6 +100,8 @@ const imageDialogState$ = Cell(
               const imageUploadHandlerValue = r.getValue(imageUploadHandler$);
               Promise.all(cbPayload.map((file) => imageUploadHandlerValue(file.getAsFile()))).then((urls) => {
                 urls.forEach((url) => {
+                  if (typeof url === "undefined")
+                    return;
                   editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
                     src: url,
                     altText: ""
@@ -207,6 +213,8 @@ function onDrop(event, editor, imageUploadHandler) {
       event.preventDefault();
       Promise.all(cbPayload.map((image) => imageUploadHandler(image.getAsFile()))).then((urls) => {
         urls.forEach((url) => {
+          if (typeof url === "undefined")
+            return;
           editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
             src: url,
             altText: ""
