@@ -52,7 +52,7 @@ function useSuspenseImage(src: string) {
 }
 
 function LazyImage({
-  title,
+  caption,
   alt,
   className,
   imageRef,
@@ -60,7 +60,7 @@ function LazyImage({
   width,
   height
 }: {
-  title: string
+  caption?: string
   alt: string
   className: string | null
   imageRef: { current: null | HTMLImageElement }
@@ -69,17 +69,17 @@ function LazyImage({
   height: number | 'inherit'
 }): JSX.Element {
   useSuspenseImage(src)
+
   return (
-    <img
-      className={className || undefined}
-      alt={alt}
-      src={src}
-      title={title}
-      ref={imageRef}
-      draggable="false"
-      width={width}
-      height={height}
-    />
+    <figure
+      style={{
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <img className={className || undefined} alt={alt} src={src} ref={imageRef} draggable="false" width={width} height={height} />
+      {caption ? <figcaption style={{ width: '100%' }}>{caption}</figcaption> : null}
+    </figure>
   )
 }
 
@@ -258,7 +258,7 @@ export function ImageEditor({ src, title, alt, nodeKey, width, height }: ImageEd
               [styles.focusedImage]: isFocused
             })}
             src={imageSource}
-            title={title || ''}
+            caption={title || ''}
             alt={alt || ''}
             imageRef={imageRef}
           />

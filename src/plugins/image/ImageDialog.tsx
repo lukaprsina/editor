@@ -80,7 +80,7 @@ export const ImageDialog: React.FC = () => {
             </div>
 
             <div className={styles.formField}>
-              <label htmlFor="title">Title:</label>
+              <label htmlFor="title">Caption:</label>
               <input type="text" {...register('title')} className={styles.textInput} />
             </div>
 
