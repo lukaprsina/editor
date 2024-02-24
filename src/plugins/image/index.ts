@@ -41,7 +41,7 @@ export * from './ImageNode'
 /**
  * @group Image
  */
-export type ImageUploadHandler = ((image: File) => Promise<string>) | null
+export type ImageUploadHandler = ((image: File) => Promise<string | undefined>) | null
 
 /**
  * @group Image
@@ -125,7 +125,8 @@ export const imageDialogState$ = Cell<InactiveImageDialogState | NewImageDialogS
       ([values, theEditor, imageUploadHandler, dialogState]) => {
         const handler =
           dialogState.type === 'editing'
-            ? (src: string) => {
+            ? (src: string | undefined) => {
+                if (typeof src === 'undefined') return
                 theEditor?.update(() => {
                   const { nodeKey } = dialogState
                   const imageNode = $getNodeByKey(nodeKey) as ImageNode
@@ -136,7 +137,8 @@ export const imageDialogState$ = Cell<InactiveImageDialogState | NewImageDialogS
                 })
                 r.pub(imageDialogState$, { type: 'inactive' })
               }
-            : (src: string) => {
+            : (src: string | undefined) => {
+                if (typeof src === 'undefined') return
                 theEditor?.update(() => {
                   const imageNode = $createImageNode({ altText: values.altText ?? '', src, title: values.title ?? '' })
                   $insertNodes([imageNode])
@@ -214,6 +216,7 @@ export const imageDialogState$ = Cell<InactiveImageDialogState | NewImageDialogS
                   Promise.all(cbPayload.map((file) => imageUploadHandlerValue(file.getAsFile()!)))
                     .then((urls) => {
                       urls.forEach((url) => {
+                        if (typeof url === 'undefined') return
                         editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
                           src: url,
                           altText: ''
@@ -377,6 +380,7 @@ function onDrop(event: DragEvent, editor: LexicalEditor, imageUploadHandler: Ima
       Promise.all(cbPayload.map((image) => imageUploadHandler(image.getAsFile()!)))
         .then((urls) => {
           urls.forEach((url) => {
+            if (typeof url === 'undefined') return
             editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
               src: url,
               altText: ''
